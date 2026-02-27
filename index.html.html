@@ -11,9 +11,6 @@
 <meta name="author" content="SNEAGTTOOLSTECSTORE" />
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
 <link rel="canonical" href="https://sneagttoolstecstore.vercel.app/" />
-<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-<!-- robots.txt content: User-agent: * | Allow: / | Sitemap: https://sneagttoolstecstore.vercel.app/sitemap.xml -->
 
 <!-- ═══ OPEN GRAPH (Facebook, LinkedIn, WhatsApp previews) ═══ -->
 <meta property="og:type" content="website" />
@@ -444,6 +441,146 @@ section {
 .section-header { margin-bottom:52px; }
 
 /* FILTER BAR */
+/* SEARCH BAR */
+.search-wrap {
+  position: relative;
+  margin-bottom: 20px;
+  max-width: 100%;
+}
+.search-input {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 14px 50px 14px 48px;
+  border-radius: 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.02em;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus {
+  border-color: var(--p1);
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+}
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 1rem;
+  pointer-events: none;
+}
+.search-clear {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(139,92,246,0.15);
+  border: none;
+  color: var(--p3);
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.search-clear:hover { background: rgba(139,92,246,0.3); }
+.search-clear.visible { display: flex; }
+
+/* SUGGESTIONS DROPDOWN */
+.suggestions-box {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  z-index: 50;
+  max-height: 320px;
+  overflow-y: auto;
+  display: none;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+}
+.suggestions-box.open { display: block; }
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.suggestion-item:last-child { border-bottom: none; }
+.suggestion-item:hover, .suggestion-item.highlighted {
+  background: rgba(139,92,246,0.1);
+}
+.suggestion-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  background: rgba(139,92,246,0.1);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.suggestion-info { flex: 1; min-width: 0; }
+.suggestion-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.suggestion-name mark {
+  background: rgba(139,92,246,0.3);
+  color: var(--p3);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.suggestion-tag {
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.suggestion-cat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--p3);
+  background: rgba(139,92,246,0.1);
+  border: 1px solid rgba(139,92,246,0.2);
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+.no-results {
+  padding: 20px 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.search-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-bottom: 16px;
+  letter-spacing: 0.04em;
+}
+.search-count span { color: var(--p3); font-weight: 600; }
+
 .filter-bar {
   display:flex;
   gap:8px;
@@ -1116,6 +1253,24 @@ footer {
     <h2 class="section-title">All Security &amp; Forensic Tools</h2>
     <p class="section-sub">Click any tool for full details, requirements, and to request access. Delivery within 2 hours of confirmation.</p>
   </div>
+  <!-- SEARCH BAR -->
+  <div class="search-wrap" id="searchWrap">
+    <span class="search-icon">🔍</span>
+    <input
+      type="text"
+      class="search-input"
+      id="searchInput"
+      placeholder="Search 100+ tools... e.g. Nmap, Burp Suite, SpyVport"
+      autocomplete="off"
+      oninput="handleSearch(this.value)"
+      onkeydown="handleSearchKey(event)"
+      onfocus="showSuggestions()"
+    />
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+    <div class="suggestions-box" id="suggestionsBox"></div>
+  </div>
+  <div class="search-count" id="searchCount"></div>
+
   <div class="filter-bar">
     <button class="filter-btn active" onclick="filterCards('all',this)">All (100+)</button>
     <button class="filter-btn" onclick="filterCards('network',this)">Network</button>
@@ -1635,6 +1790,178 @@ function copyAddr(id, btn){
 }
 
 renderProducts();
+
+// ── SEARCH FUNCTIONALITY ──────────────────────────────────────
+let searchQuery = '';
+let highlightedIdx = -1;
+let currentSuggestions = [];
+
+function handleSearch(val) {
+  searchQuery = val.trim();
+  const clearBtn = document.getElementById('searchClear');
+  clearBtn.classList.toggle('visible', searchQuery.length > 0);
+
+  if (searchQuery.length === 0) {
+    closeSuggestions();
+    renderProducts();
+    document.getElementById('searchCount').innerHTML = '';
+    // re-activate the all button
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.filter-btn').classList.add('active');
+    return;
+  }
+
+  // filter products by name or tag or category
+  const q = searchQuery.toLowerCase();
+  const matches = products.filter(p =>
+    p.name.toLowerCase().includes(q) ||
+    p.tag.toLowerCase().includes(q) ||
+    p.cat.toLowerCase().includes(q) ||
+    p.desc.toLowerCase().includes(q) ||
+    p.tags.some(t => t.t.toLowerCase().includes(q))
+  );
+
+  currentSuggestions = matches.slice(0, 8);
+  highlightedIdx = -1;
+  renderSuggestions(q, currentSuggestions);
+  renderFiltered(matches, q);
+}
+
+function renderSuggestions(q, matches) {
+  const box = document.getElementById('suggestionsBox');
+  if (!q || matches.length === 0 && q.length < 2) {
+    box.classList.remove('open');
+    return;
+  }
+  if (matches.length === 0) {
+    box.innerHTML = `<div class="no-results">No tools found for "<strong>${escHtml(q)}</strong>" — try a different keyword</div>`;
+    box.classList.add('open');
+    return;
+  }
+
+  box.innerHTML = matches.map((p, i) => {
+    const highlighted = p.name.replace(new RegExp(`(${escRegex(q)})`, 'gi'), '<mark>$1</mark>');
+    return `<div class="suggestion-item" id="sug-${i}" onclick="pickSuggestion('${p.name.replace(/'/g,"\'")}')">
+      <div class="suggestion-icon">${p.icon}</div>
+      <div class="suggestion-info">
+        <div class="suggestion-name">${highlighted}</div>
+        <div class="suggestion-tag">${p.tag}</div>
+      </div>
+      <span class="suggestion-cat">${p.cat}</span>
+    </div>`;
+  }).join('');
+  box.classList.add('open');
+}
+
+function renderFiltered(matches, q) {
+  const grid = document.getElementById('productGrid');
+  const count = document.getElementById('searchCount');
+
+  if (matches.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);">
+      <div style="font-size:2rem;margin-bottom:12px;">🔍</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:0.9rem;font-weight:700;margin-bottom:8px;color:var(--text);">No tools found</div>
+      <div style="font-size:0.85rem;">Try searching for: Nmap, Burp Suite, Hashcat, Metasploit...</div>
+    </div>`;
+    count.innerHTML = `<span>0</span> results for "${escHtml(q)}"`;
+    return;
+  }
+
+  count.innerHTML = `<span>${matches.length}</span> tool${matches.length !== 1 ? 's' : ''} found for "${escHtml(q)}"`;
+
+  grid.innerHTML = matches.map(p => `
+    <div class="product-card" onclick="openModal('${p.name.replace(/'/g,"\'")}')">
+      <div class="card-icon">${p.icon}</div>
+      <div class="card-name">${p.name.replace(new RegExp('(' + escRegex(q) + ')', 'gi'), '<mark style="background:rgba(139,92,246,0.25);color:var(--p3);border-radius:2px;">$1</mark>')}</div>
+      <div class="card-desc">${p.tag}</div>
+      <div class="card-tags">${p.tags.map(t => `<span class="tag ${t.c}">${t.t}</span>`).join('')}</div>
+      <div class="card-footer">
+        <span class="card-tiers">Basic · Standard · Premium</span>
+        <span class="card-cta">Details →</span>
+      </div>
+    </div>
+  `).join('');
+
+  // deactivate filter buttons during search
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+}
+
+function pickSuggestion(name) {
+  document.getElementById('searchInput').value = name;
+  searchQuery = name;
+  closeSuggestions();
+  const p = products.find(x => x.name === name);
+  if (p) {
+    renderFiltered([p], name);
+    document.getElementById('searchCount').innerHTML = `<span>1</span> result for "${escHtml(name)}"`;
+  }
+  document.getElementById('searchClear').classList.add('visible');
+}
+
+function handleSearchKey(e) {
+  const box = document.getElementById('suggestionsBox');
+  if (!box.classList.contains('open')) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    highlightedIdx = Math.min(highlightedIdx + 1, currentSuggestions.length - 1);
+    updateHighlight();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    highlightedIdx = Math.max(highlightedIdx - 1, -1);
+    updateHighlight();
+  } else if (e.key === 'Enter' && highlightedIdx >= 0) {
+    e.preventDefault();
+    pickSuggestion(currentSuggestions[highlightedIdx].name);
+  } else if (e.key === 'Escape') {
+    closeSuggestions();
+  }
+}
+
+function updateHighlight() {
+  document.querySelectorAll('.suggestion-item').forEach((el, i) => {
+    el.classList.toggle('highlighted', i === highlightedIdx);
+  });
+}
+
+function showSuggestions() {
+  if (searchQuery.length > 0) {
+    const q = searchQuery.toLowerCase();
+    const matches = products.filter(p =>
+      p.name.toLowerCase().includes(q) || p.tag.toLowerCase().includes(q)
+    );
+    currentSuggestions = matches.slice(0, 8);
+    renderSuggestions(q, currentSuggestions);
+  }
+}
+
+function closeSuggestions() {
+  document.getElementById('suggestionsBox').classList.remove('open');
+  highlightedIdx = -1;
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  searchQuery = '';
+  document.getElementById('searchClear').classList.remove('visible');
+  document.getElementById('searchCount').innerHTML = '';
+  closeSuggestions();
+  renderProducts();
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.filter-btn').classList.add('active');
+}
+
+// Close suggestions when clicking outside
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('searchWrap');
+  if (wrap && !wrap.contains(e.target)) closeSuggestions();
+});
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 </script>
 
 <!-- ═══ SEO CONTENT BLOCK — Visible to search engines & AI crawlers ═══ -->
