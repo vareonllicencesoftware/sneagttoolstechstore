@@ -85,7 +85,324 @@
       "https://wa.me/22577696480"
     ]
   }
-  </script>
+  
+// ============================================================
+// FLASH SALE TIMER + GRID
+// ============================================================
+(function(){
+  // Flash sale tools - pick 6 featured tools
+  var flashIds = [7, 14, 19, 30, 34, 55];
+  var flashLabels = ['HOT DEAL','TOP PICK','TRENDING','BEST VALUE','STAFF PICK','LIMITED'];
+  var grid = document.getElementById('flash-grid');
+  if(grid && typeof products !== 'undefined'){
+    flashIds.forEach(function(id, i){
+      var p = products.find(function(x){return x.id===id;});
+      if(!p) p = products[i] || products[0];
+      var card = document.createElement('div');
+      card.className = 'flash-card';
+      card.onclick = function(){ openModal(p.id); };
+      card.innerHTML = '<div class="flash-card-badge">' + flashLabels[i] + '</div>'
+        + '<div class="flash-card-icon">' + p.icon + '</div>'
+        + '<div class="flash-card-name">' + p.name + '</div>'
+        + '<div class="flash-card-desc">' + p.desc.substring(0,70) + '...</div>'
+        + '<div class="flash-card-footer">'
+        + '<span class="flash-deal-tag">&#9889; SPECIAL OFFER</span>'
+        + '<button class="flash-card-btn">GET NOW</button>'
+        + '</div>';
+      grid.appendChild(card);
+    });
+  }
+
+  // Flash timer — 23hr countdown resets daily
+  function updateFlashTimer(){
+    var now = new Date();
+    var midnight = new Date(now); midnight.setHours(23,59,59,0);
+    var diff = Math.floor((midnight - now) / 1000);
+    var h = Math.floor(diff/3600);
+    var m = Math.floor((diff%3600)/60);
+    var s = diff % 60;
+    var fh = document.getElementById('fl-h');
+    var fm = document.getElementById('fl-m');
+    var fs = document.getElementById('fl-s');
+    if(fh) fh.textContent = (h<10?'0':'')+h;
+    if(fm) fm.textContent = (m<10?'0':'')+m;
+    if(fs) fs.textContent = (s<10?'0':'')+s;
+  }
+  updateFlashTimer();
+  setInterval(updateFlashTimer, 1000);
+})();
+
+// ============================================================
+// TOP 10 LEADERBOARD
+// ============================================================
+(function(){
+  var top10Ids = [7,30,14,19,34,55,24,31,10,25];
+  var orders =   [847,763,698,641,589,534,478,423,367,312];
+  var list = document.getElementById('top10-list');
+  if(!list || typeof products === 'undefined') return;
+  var rankClass = ['gold','silver','bronze','','','','','','',''];
+  var medals = ['&#129351;','&#129352;','&#129353;','4','5','6','7','8','9','10'];
+  top10Ids.forEach(function(id, i){
+    var p = products.find(function(x){return x.id===id;});
+    if(!p) p = products[i] || products[0];
+    var pct = Math.round((orders[i]/orders[0])*100);
+    var item = document.createElement('div');
+    item.className = 'top10-item ' + (rankClass[i]||'');
+    item.onclick = function(){ openModal(p.id); };
+    item.innerHTML = '<div class="top10-rank">' + medals[i] + '</div>'
+      + '<div class="top10-icon">' + p.icon + '</div>'
+      + '<div class="top10-info">'
+      + '<div class="top10-name">' + p.name + '</div>'
+      + '<div class="top10-cat">' + p.category.toUpperCase() + '</div>'
+      + '</div>'
+      + '<div class="top10-bar-wrap">'
+      + '<div class="top10-bar-track"><div class="top10-bar-fill" style="width:0%" data-width="'+pct+'%"></div></div>'
+      + '<div class="top10-orders">' + orders[i] + ' orders</div>'
+      + '</div>';
+    list.appendChild(item);
+  });
+
+  // Animate bars on scroll
+  var animated = false;
+  function animateBars(){
+    if(animated) return;
+    var el = document.getElementById('top10-section');
+    if(!el) return;
+    var rect = el.getBoundingClientRect();
+    if(rect.top < window.innerHeight * 0.85){
+      animated = true;
+      document.querySelectorAll('.top10-bar-fill').forEach(function(bar){
+        setTimeout(function(){ bar.style.width = bar.getAttribute('data-width'); }, 100);
+      });
+    }
+  }
+  window.addEventListener('scroll', animateBars, {passive:true});
+  animateBars();
+})();
+
+// ============================================================
+// VIP CONTACT
+// ============================================================
+function contactVIP(tier){
+  var msg = encodeURIComponent('Hi Sneagt! I am interested in the ' + tier + ' VIP membership. I have purchased tools from you before. Can you confirm my status?');
+  window.open('https://wa.me/22577696480?text=' + msg, '_blank');
+}
+
+
+// ============================================================
+// LIVE SALES TICKER — live time updates
+// ============================================================
+(function(){
+  var items = document.querySelectorAll('.ticker-item .t-time');
+  var base = [2,5,8,11,14,17,21,24,28,32,35,38];
+  function updateTimes(){
+    items.forEach(function(el, i){
+      var mins = base[i % base.length];
+      el.textContent = mins + ' min ago';
+      base[i % base.length] = mins + 1;
+    });
+  }
+  setInterval(updateTimes, 60000);
+})();
+
+// ============================================================
+// SPIN TO WIN
+// ============================================================
+var spinDone = false;
+var spinSegments = [
+  {label:'10% OFF', color:'#071828', text:'#00d4ff', deal:'10% discount on your next order!'},
+  {label:'FREE SETUP', color:'#0a1f30', text:'#00ff88', deal:'Free setup support included!'},
+  {label:'FAST DELIVERY', color:'#071828', text:'#ff4466', deal:'Priority delivery under 30 minutes!'},
+  {label:'BONUS TOOL', color:'#0a1f30', text:'#c9a84c', deal:'Free bonus tool with your order!'},
+  {label:'VIP ACCESS', color:'#071828', text:'#00d4ff', deal:'Silver VIP status on your first order!'},
+  {label:'SPECIAL DEAL', color:'#0a1f30', text:'#00ff88', deal:'Special bundle deal just for you!'},
+  {label:'15% OFF', color:'#071828', text:'#ff4466', deal:'15% discount on any bundle!'},
+  {label:'FREE UPDATE', color:'#0a1f30', text:'#c9a84c', deal:'Free lifetime update on chosen tool!'},
+];
+
+function drawWheel(rotation){
+  var canvas = document.getElementById('spin-canvas');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var cx = 120, cy = 120, r = 116;
+  var n = spinSegments.length;
+  var arc = (Math.PI * 2) / n;
+  ctx.clearRect(0,0,240,240);
+  spinSegments.forEach(function(seg, i){
+    var start = rotation + i * arc;
+    var end = start + arc;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,end);
+    ctx.fillStyle = seg.color;
+    ctx.fill();
+    ctx.strokeStyle = '#00d4ff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(start + arc/2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = seg.text;
+    ctx.font = 'bold 11px Orbitron,monospace';
+    ctx.fillText(seg.label, r-10, 4);
+    ctx.restore();
+  });
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(cx,cy,22,0,Math.PI*2);
+  ctx.fillStyle = '#00d4ff';
+  ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.font = 'bold 10px Orbitron,monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('SPIN',cx,cy);
+}
+
+function openSpin(){
+  drawWheel(0);
+  document.getElementById('spin-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSpin(){
+  document.getElementById('spin-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function doSpin(){
+  if(spinDone) return;
+  var btn = document.getElementById('spin-btn');
+  btn.disabled = true;
+  btn.textContent = 'SPINNING...';
+  var extraSpins = 5;
+  var targetSeg = Math.floor(Math.random() * spinSegments.length);
+  var n = spinSegments.length;
+  var arc = (Math.PI * 2) / n;
+  // Land pointer (at top = -PI/2) on targetSeg center
+  var targetAngle = (Math.PI * 2 * extraSpins) + (Math.PI * 2 - (targetSeg * arc + arc/2)) - Math.PI/2;
+  var start = null;
+  var duration = 4000;
+  var currentRot = 0;
+
+  function easeOut(t){ return 1 - Math.pow(1-t, 4); }
+
+  function animate(ts){
+    if(!start) start = ts;
+    var elapsed = ts - start;
+    var progress = Math.min(elapsed / duration, 1);
+    var eased = easeOut(progress);
+    currentRot = targetAngle * eased;
+    drawWheel(currentRot);
+    if(progress < 1){
+      requestAnimationFrame(animate);
+    } else {
+      // Result
+      var seg = spinSegments[targetSeg];
+      document.getElementById('spin-result').innerHTML = '&#127881; You won: <strong>' + seg.label + '</strong>';
+      var msg = encodeURIComponent('Hi Sneagt! I just spun the wheel on your store and won: "' + seg.deal + '" Please apply this to my order!');
+      var claimBtn = document.getElementById('spin-claim-btn');
+      claimBtn.href = 'https://wa.me/22577696480?text=' + msg;
+      claimBtn.style.display = 'flex';
+      btn.textContent = 'SPIN AGAIN';
+      btn.disabled = false;
+      spinDone = false;
+    }
+  }
+  spinDone = true;
+  requestAnimationFrame(animate);
+}
+
+// Auto open spin after 25 seconds (first visit only)
+setTimeout(function(){
+  if(!sessionStorage.getItem('spin_shown')){
+    sessionStorage.setItem('spin_shown','1');
+    openSpin();
+  }
+}, 25000);
+
+// ============================================================
+// PDF CATALOG DOWNLOAD
+// ============================================================
+function downloadCatalog(){
+  var btn = document.getElementById('pdf-dl-btn');
+  btn.innerHTML = '&#9203; GENERATING...';
+  btn.disabled = true;
+
+  setTimeout(function(){
+    var lines = [];
+    lines.push('SNEAGTTOOLSTEC — PROFESSIONAL CYBERSECURITY TOOLS CATALOG');
+    lines.push('='.repeat(60));
+    lines.push('Website: https://sneagttoolstec.vercel.app/');
+    lines.push('WhatsApp: +225 77 69 64 80 | Telegram: @Sneagt');
+    lines.push('Operating Since: 2019 | 800+ Clients | 4.9/5 Rating');
+    lines.push('='.repeat(60));
+    lines.push('');
+
+    var cats = {};
+    products.forEach(function(p){
+      if(!cats[p.category]) cats[p.category] = [];
+      cats[p.category].push(p);
+    });
+
+    Object.keys(cats).forEach(function(cat){
+      lines.push('');
+      lines.push('[ ' + cat.toUpperCase() + ' TOOLS ]');
+      lines.push('-'.repeat(40));
+      cats[cat].forEach(function(p, i){
+        lines.push('');
+        lines.push((i+1) + '. ' + p.name);
+        lines.push('   ' + p.desc);
+        lines.push('   Tiers: ' + p.tiers.join(' | '));
+        lines.push('   Features: ' + p.features.slice(0,3).join(', '));
+      });
+    });
+
+    lines.push('');
+    lines.push('='.repeat(60));
+    lines.push('TOOL BUNDLES');
+    lines.push('-'.repeat(40));
+    lines.push('1. Beginner Kit — 5 essential tools');
+    lines.push('2. Red Team Bundle — 6 penetration testing tools');
+    lines.push('3. Forensics Kit — 6 digital forensics tools');
+    lines.push('4. Ultimate Bundle — All 96 tools');
+    lines.push('5. Mobile Security Kit — 5 mobile tools');
+    lines.push('6. OSINT Master Kit — 6 OSINT tools');
+    lines.push('');
+    lines.push('='.repeat(60));
+    lines.push('PAYMENT METHODS: Bitcoin (BTC) | Ethereum (ETH) | USDT TRC20');
+    lines.push('DELIVERY: Under 1 hour for Premium | 1-24hrs Standard');
+    lines.push('SUPPORT: Full setup support included with every purchase');
+    lines.push('');
+    lines.push('Contact us: wa.me/22577696480 | t.me/Sneagt');
+    lines.push('='.repeat(60));
+    lines.push('SNEAGTTOOLSTEC © 2019-2026. Professional Security Tools.');
+
+    var text = lines.join('\n');
+    var blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'SNEAGTTOOLSTEC_Catalog_2026.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    btn.innerHTML = '&#10003; DOWNLOADED!';
+    btn.style.borderColor = '#00ff88';
+    btn.style.color = '#00ff88';
+    setTimeout(function(){
+      btn.innerHTML = '&#128196; CATALOG PDF';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      btn.disabled = false;
+    }, 3000);
+  }, 1200);
+}
+
+</script>
 
   <!-- FAQ STRUCTURED DATA (READ BY AI AND GOOGLE) -->
   <script type="application/ld+json">
@@ -148,11 +465,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>SNEAGTTOOLSTEC — Next Level Cyber Tools</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#020408;--bg2:#040c14;--bg3:#071220;--panel:#071828;--border:#0a3a5c;--glow:#00d4ff;--glow2:#00ff88;--glow3:#ff4466;--accent:#ff6b35;--text:#c8e6f0;--muted:#4a7a94;--dim:#1a3a4a;}
+:root{
+  --bg:#010610;--bg2:#030b16;--bg3:#061222;
+  --panel:#071828;--panel2:#08192d;--panel3:#0a1f35;
+  --border:#0d3d61;--border2:#1a4d6e;
+  --glow:#00d4ff;--glow2:#00ff88;--glow3:#ff4466;--accent:#ff6b35;
+  --text:#d4eaf5;--muted:#4a7a94;--dim:#1a3a4a;
+  --glass:rgba(0,212,255,0.04);--glass2:rgba(0,212,255,0.08);
+  --shadow-glow:0 0 40px rgba(0,212,255,0.12);
+  --shadow-card:0 4px 24px rgba(0,0,0,0.5);
+  --radius-cut:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+}
 *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:16px;overflow-x:hidden;cursor:crosshair;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Space Grotesk','Rajdhani',sans-serif;
+  font-size:16px;
+  overflow-x:hidden;
+  cursor:crosshair;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
 body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,212,255,0.013) 2px,rgba(0,212,255,0.013) 4px);pointer-events:none;z-index:9998;}
 #matrix-bg{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.055;z-index:0;pointer-events:none;}
 ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);}
@@ -170,7 +506,16 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 #splash.hide{animation:splashFade .6s ease forwards;}
 @keyframes splashFade{to{opacity:0;pointer-events:none;}}
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:66px;background:rgba(2,4,8,0.96);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);}
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;height:68px;
+  background:rgba(1,6,16,0.85);
+  backdrop-filter:blur(20px) saturate(1.8);
+  -webkit-backdrop-filter:blur(20px) saturate(1.8);
+  border-bottom:1px solid rgba(0,212,255,0.12);
+  box-shadow:0 1px 0 rgba(0,212,255,0.06),0 8px 32px rgba(0,0,0,0.4);
+}
 .nav-logo{height:44px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,212,255,0.5));}
 .nav-links{display:flex;gap:26px;list-style:none;}
 .nav-links a{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:2px;text-transform:uppercase;transition:color .2s;}
@@ -193,12 +538,34 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:ce
 .sri-cat{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--glow);letter-spacing:1px;margin-top:2px;}
 .search-no-result{padding:14px;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);text-align:center;}
 /* HERO */
-.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 40px 60px;z-index:1;}
+.hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 40px 80px;z-index:1;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,212,255,0.07) 0%,transparent 70%),
+             radial-gradient(ellipse 40% 40% at 80% 80%,rgba(0,255,136,0.04) 0%,transparent 60%);
+}
 .hero-logo{width:240px;max-width:65vw;margin-bottom:28px;filter:drop-shadow(0 0 20px rgba(0,212,255,0.4));}
 .hero-badge{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--glow2);border:1px solid var(--glow2);padding:6px 18px;margin-bottom:26px;box-shadow:0 0 15px rgba(0,255,136,0.12);}
-.hero-title{font-family:'Orbitron',monospace;font-size:clamp(30px,6vw,72px);font-weight:900;line-height:.95;margin-bottom:18px;}
+.hero-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(36px,7vw,88px);
+  font-weight:900;line-height:.92;
+  margin-bottom:22px;
+  letter-spacing:-1px;
+}
 .hero-title .l1{color:#fff;display:block;}.hero-title .l2{color:transparent;-webkit-text-stroke:1px var(--glow);display:block;}.hero-title .l3{color:var(--glow3);display:block;}
-.hero-sub{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--muted);max-width:540px;line-height:1.9;margin-bottom:42px;letter-spacing:1px;}
+.hero-sub{
+  font-family:'Inter','Space Grotesk',sans-serif;
+  font-size:clamp(14px,2vw,18px);
+  color:var(--muted);
+  max-width:600px;
+  line-height:1.75;
+  margin-bottom:32px;
+  font-weight:300;
+  letter-spacing:0.3px;
+}
+.hero-sub span{color:var(--text);font-weight:500;}
 .hero-sub span{color:var(--glow);}
 .hero-cta{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
 .btn-primary{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:2px;padding:13px 30px;background:var(--glow);color:#000;border:none;cursor:pointer;text-transform:uppercase;text-decoration:none;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .2s;box-shadow:0 0 18px rgba(0,212,255,0.35);}
@@ -239,7 +606,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:ce
 .section{position:relative;z-index:1;padding:70px 40px;max-width:1400px;margin:0 auto;}
 .section-header{display:flex;align-items:center;gap:18px;margin-bottom:44px;}
 .section-tag{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--glow2);text-transform:uppercase;writing-mode:vertical-rl;transform:rotate(180deg);}
-.section-title{font-family:'Orbitron',monospace;font-size:clamp(22px,3.5vw,40px);font-weight:900;color:#fff;}
+.section-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(24px,3.5vw,44px);
+  font-weight:900;color:#fff;
+  letter-spacing:-0.5px;
+  line-height:1.1;
+}
 .section-title span{color:var(--glow);}
 .section-line{flex:1;height:1px;background:linear-gradient(90deg,var(--glow),transparent);opacity:.4;}
 /* FILTER */
@@ -248,9 +621,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:ce
 .filter-btn:hover,.filter-btn.active{color:var(--glow);border-color:var(--glow);background:rgba(0,212,255,0.07);}
 /* PRODUCTS */
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;}
-.product-card{position:relative;background:var(--panel);border:1px solid var(--border);padding:22px;cursor:pointer;transition:all .3s;overflow:hidden;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));}
+.product-card{
+  position:relative;
+  background:linear-gradient(135deg,var(--panel2),var(--panel));
+  border:1px solid var(--border);
+  padding:24px;cursor:pointer;
+  transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;
+  overflow:hidden;
+  clip-path:var(--radius-cut);
+  box-shadow:var(--shadow-card);
+}
 .product-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--glow),transparent);opacity:0;transition:opacity .3s;}
-.product-card:hover{border-color:var(--glow);transform:translateY(-3px);box-shadow:0 6px 32px rgba(0,212,255,0.12);}
+.product-card:hover{
+  transform:translateY(-6px) scale(1.01);
+  border-color:var(--glow);
+  box-shadow:0 12px 50px rgba(0,0,0,0.6),0 0 0 1px rgba(0,212,255,0.15),var(--shadow-glow);
+}
 .product-card:hover::before{opacity:1;}
 .card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
 .card-icon{width:52px;height:52px;display:flex;align-items:center;justify-content:center;background:rgba(0,212,255,0.06);border:1px solid var(--dim);clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);font-size:26px;}
@@ -269,8 +655,23 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:ce
 .tier-badges{display:flex;gap:4px;}
 .tier{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 6px;text-transform:uppercase;border:1px solid;}
 .tier-basic{color:#88aacc;border-color:#2a4a6a;}.tier-standard{color:var(--glow);border-color:var(--glow);}.tier-premium{color:var(--accent);border-color:var(--accent);}
-.btn-get{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;padding:7px 14px;background:transparent;color:var(--glow);border:1px solid var(--glow);cursor:pointer;text-transform:uppercase;transition:all .2s;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);position:relative;z-index:2;}
-.btn-get:hover{background:var(--glow);color:#000;}
+.btn-get{
+  font-family:'Orbitron',monospace;font-size:10px;
+  font-weight:700;letter-spacing:2px;
+  padding:10px 18px;
+  background:transparent;
+  border:1px solid var(--glow);
+  color:var(--glow);cursor:pointer;
+  clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+  transition:all .25s ease;
+  position:relative;overflow:hidden;
+}
+.btn-get:hover{
+  background:var(--glow);
+  color:#000;
+  box-shadow:0 0 20px rgba(0,212,255,0.4);
+  transform:translateY(-1px);
+}
 .no-results{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--muted);text-align:center;padding:50px 20px;border:1px dashed var(--dim);letter-spacing:2px;}
 /* REVIEWS */
 .reviews-section{position:relative;z-index:1;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:70px 40px;}
@@ -591,7 +992,569 @@ footer{position:relative;z-index:1;background:var(--bg2);border-top:1px solid va
 
 /* CURSOR TRAIL */
 .cursor-dot{position:fixed;pointer-events:none;z-index:99999;border-radius:50%;transform:translate(-50%,-50%);}
+
+/* TERMS DISCLAIMER POPUP */
+#terms-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:999998;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);}
+#terms-box{background:#040c14;border:1px solid #00d4ff;max-width:520px;width:100%;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,22px 100%,0 calc(100% - 22px));box-shadow:0 0 60px rgba(0,212,255,0.2);animation:modalIn .4s ease;}
+#terms-box .t-header{padding:22px 26px;border-bottom:1px solid #0a3a5c;text-align:center;}
+#terms-box .t-icon{font-size:42px;margin-bottom:10px;}
+#terms-box .t-title{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:5px;}
+#terms-box .t-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:#00d4ff;letter-spacing:3px;}
+#terms-box .t-body{padding:22px 26px;}
+#terms-box .t-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;line-height:1.8;letter-spacing:.5px;}
+#terms-box .t-item span{color:#00d4ff;flex-shrink:0;font-size:14px;}
+#terms-box .t-item strong{color:#c8e6f0;}
+#terms-box .t-footer{padding:0 26px 22px;display:flex;flex-direction:column;gap:10px;}
+#terms-agree{font-family:'Orbitron',monospace;font-size:12px;font-weight:900;letter-spacing:2px;padding:14px;background:#00d4ff;color:#000;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .2s;width:100%;box-shadow:0 0 20px rgba(0,212,255,0.3);}
+#terms-agree:hover{background:#fff;box-shadow:0 0 40px rgba(0,212,255,0.6);}
+#terms-decline{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;padding:10px;background:transparent;color:#4a7a94;border:1px solid #1a3a4a;cursor:pointer;width:100%;transition:all .2s;}
+#terms-decline:hover{border-color:#ff4466;color:#ff4466;}
+.t-warning{font-family:'Share Tech Mono',monospace;font-size:10px;color:#ff4466;text-align:center;letter-spacing:1px;padding:8px;border:1px solid rgba(255,68,102,0.2);background:rgba(255,68,102,0.04);margin-bottom:10px;}
+
+/* GLITCH EFFECT */
+.glitch{position:relative;animation:glitchMain 4s infinite;}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;}
+.glitch::before{color:#ff4466;animation:glitchTop 4s infinite;clip-path:polygon(0 0,100% 0,100% 35%,0 35%);}
+.glitch::after{color:#00d4ff;animation:glitchBottom 4s infinite;clip-path:polygon(0 65%,100% 65%,100% 100%,0 100%);}
+@keyframes glitchMain{0%,90%,100%{transform:none;opacity:1;}92%{transform:skew(-1deg);opacity:.8;}94%{transform:skew(1deg) translateX(2px);}96%{transform:none;}}
+@keyframes glitchTop{0%,90%,100%{transform:none;opacity:0;}92%{transform:translateX(-3px);opacity:.8;}94%{transform:translateX(3px);opacity:.6;}96%{transform:none;opacity:0;}}
+@keyframes glitchBottom{0%,90%,100%{transform:none;opacity:0;}92%{transform:translateX(3px);opacity:.8;}94%{transform:translateX(-3px);opacity:.6;}96%{transform:none;opacity:0;}}
+
+/* POPULARITY BAR */
+.pop-bar-wrap{margin:8px 0;display:flex;align-items:center;gap:8px;}
+.pop-bar-track{flex:1;height:4px;background:#1a3a4a;overflow:hidden;}
+.pop-bar-fill{height:100%;background:linear-gradient(90deg,#00d4ff,#00ff88);transition:width 1s ease;}
+.pop-bar-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00d4ff;letter-spacing:1px;white-space:nowrap;}
+
+/* TOOL COMPARISON */
+#compare-bar{position:fixed;bottom:0;left:0;right:0;z-index:7000;background:#040c14;border-top:2px solid #00d4ff;padding:12px 24px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 -4px 30px rgba(0,212,255,0.15);}
+.compare-bar-title{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#fff;letter-spacing:1px;}
+.compare-slots{display:flex;gap:10px;flex:1;flex-wrap:wrap;}
+.compare-slot{background:#071828;border:1px solid #0a3a5c;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:1px;display:flex;align-items:center;gap:8px;min-width:160px;}
+.compare-slot.filled{border-color:#00d4ff;color:#fff;}
+.compare-slot-remove{cursor:pointer;color:#ff4466;font-size:14px;margin-left:auto;}
+.compare-actions{display:flex;gap:8px;}
+.btn-compare-go{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;padding:10px 20px;background:#00d4ff;color:#000;border:none;cursor:pointer;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);transition:all .2s;}
+.btn-compare-go:hover{background:#fff;}
+.btn-compare-clear{font-family:'Share Tech Mono',monospace;font-size:11px;padding:10px 16px;background:transparent;color:#4a7a94;border:1px solid #1a3a4a;cursor:pointer;transition:all .2s;}
+.btn-compare-clear:hover{border-color:#ff4466;color:#ff4466;}
+#compare-modal .modal-body{padding:0;}
+.compare-table{width:100%;border-collapse:collapse;}
+.compare-table th{background:#071828;padding:14px 16px;font-family:'Orbitron',monospace;font-size:11px;color:#00d4ff;letter-spacing:1px;text-align:left;border-bottom:1px solid #0a3a5c;}
+.compare-table td{padding:12px 16px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#c8e6f0;border-bottom:1px solid #071828;vertical-align:top;line-height:1.7;}
+.compare-table tr:hover td{background:rgba(0,212,255,0.03);}
+.compare-table .row-label{color:#4a7a94;font-size:10px;letter-spacing:1px;text-transform:uppercase;width:100px;}
+
+/* FRENCH LANGUAGE */
+.lang-toggle{display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer;padding:5px 10px;border:1px solid #0a3a5c;color:#4a7a94;transition:all .2s;background:transparent;}
+.lang-toggle:hover{border-color:#00d4ff;color:#00d4ff;}
+.lang-toggle.active{border-color:#00d4ff;color:#00d4ff;background:rgba(0,212,255,0.06);}
+[data-fr]{display:none;}
+body.fr-mode [data-en]{display:none !important;}
+body.fr-mode [data-fr]{display:revert !important;}
+
+/* AI TOOL RECOMMENDER */
+#ai-recommender{position:relative;z-index:1;background:linear-gradient(135deg,#020408,#040c14,#071828);border-top:1px solid #0a3a5c;border-bottom:1px solid #0a3a5c;padding:60px 40px;}
+.ai-inner{max-width:800px;margin:0 auto;text-align:center;}
+.ai-icon-wrap{width:80px;height:80px;border:1px solid #00d4ff;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 18px;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);background:rgba(0,212,255,0.06);box-shadow:0 0 30px rgba(0,212,255,0.1);animation:splashPulse 2s ease-in-out infinite alternate;}
+.ai-input-wrap{display:flex;gap:10px;margin:24px 0;flex-wrap:wrap;}
+.ai-input{flex:1;min-width:200px;background:rgba(0,212,255,0.04);border:1px solid #0a3a5c;color:#c8e6f0;font-family:'Share Tech Mono',monospace;font-size:13px;padding:14px 18px;outline:none;transition:border-color .2s;letter-spacing:1px;}
+.ai-input:focus{border-color:#00d4ff;box-shadow:0 0 15px rgba(0,212,255,0.15);}
+.ai-input::placeholder{color:#1a3a4a;}
+.ai-submit{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:2px;padding:14px 28px;background:#00d4ff;color:#000;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .2s;white-space:nowrap;}
+.ai-submit:hover{background:#fff;box-shadow:0 0 30px rgba(0,212,255,0.5);}
+.ai-submit:disabled{opacity:.5;cursor:not-allowed;}
+.ai-suggestions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px;}
+.ai-suggestion-btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:6px 12px;background:transparent;color:#4a7a94;border:1px solid #1a3a4a;cursor:pointer;transition:all .2s;}
+.ai-suggestion-btn:hover{border-color:#00d4ff;color:#00d4ff;}
+#ai-results{margin-top:24px;text-align:left;display:none;}
+.ai-results-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#00ff88;letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.ai-result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+.ai-result-card{background:#071828;border:1px solid #00ff88;padding:16px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));cursor:pointer;transition:all .2s;}
+.ai-result-card:hover{border-color:#fff;transform:translateY(-2px);}
+.ai-result-icon{font-size:24px;margin-bottom:8px;}
+.ai-result-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;}
+.ai-result-reason{font-family:'Share Tech Mono',monospace;font-size:10px;color:#00ff88;letter-spacing:.5px;line-height:1.6;margin-bottom:8px;}
+.ai-result-cat{font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a7a94;letter-spacing:2px;}
+.ai-typing{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#00d4ff;letter-spacing:2px;margin:16px 0;}
+.ai-typing-dots{display:flex;gap:4px;}
+.ai-typing-dot{width:6px;height:6px;border-radius:50%;background:#00d4ff;animation:typingBounce 1.2s infinite;}
+.ai-typing-dot:nth-child(2){animation-delay:.2s;}
+.ai-typing-dot:nth-child(3){animation-delay:.4s;}
+
+/* TOOL BUNDLES */
+#bundles-section{position:relative;z-index:1;background:#020408;border-top:1px solid #0a3a5c;padding:60px 40px;}
+.bundles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
+.bundle-card{background:linear-gradient(135deg,#040c14,#071828);border:1px solid #0a3a5c;padding:24px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));transition:all .3s;position:relative;overflow:hidden;cursor:pointer;}
+.bundle-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--bundle-color),transparent);opacity:.7;}
+.bundle-card:hover{transform:translateY(-4px);box-shadow:0 8px 40px rgba(0,0,0,0.4);}
+.bundle-badge{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;padding:3px 10px;border:1px solid var(--bundle-color);color:var(--bundle-color);display:inline-block;margin-bottom:12px;}
+.bundle-icon{font-size:36px;margin-bottom:12px;}
+.bundle-name{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:1px;}
+.bundle-desc{font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;line-height:1.8;margin-bottom:14px;letter-spacing:.5px;}
+.bundle-tools{display:flex;flex-direction:column;gap:5px;margin-bottom:16px;}
+.bundle-tool-item{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#c8e6f0;}
+.bundle-tool-item::before{content:'\25B8';color:var(--bundle-color);}
+.bundle-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #0a3a5c;padding-top:14px;}
+.bundle-count{font-family:'Orbitron',monospace;font-size:11px;color:var(--bundle-color);letter-spacing:1px;}
+.bundle-btn{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;padding:8px 16px;background:transparent;border:1px solid var(--bundle-color);color:var(--bundle-color);cursor:pointer;transition:all .2s;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);}
+.bundle-btn:hover{background:var(--bundle-color);color:#000;}
+.bundle-popular{position:absolute;top:12px;right:12px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:3px 8px;background:rgba(255,68,102,0.15);border:1px solid #ff4466;color:#ff4466;}
+
+/* LIVE CHAT WIDGET */
+#live-chat-widget{position:fixed;bottom:100px;right:26px;z-index:4500;}
+#chat-bubble{background:linear-gradient(135deg,#071828,#0a1f30);border:1px solid #00d4ff;padding:14px 18px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));box-shadow:0 4px 30px rgba(0,212,255,0.2);display:none;margin-bottom:10px;width:240px;animation:notifSlide .3s ease;}
+.chat-bubble-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.chat-bubble-dot{width:8px;height:8px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:pulse 1.5s infinite;}
+.chat-bubble-name{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:#fff;}
+.chat-bubble-status{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00ff88;letter-spacing:1px;}
+.chat-bubble-msg{font-family:'Share Tech Mono',monospace;font-size:11px;color:#c8e6f0;line-height:1.7;margin-bottom:12px;letter-spacing:.5px;}
+.chat-bubble-actions{display:flex;gap:7px;}
+.chat-wa-btn{flex:1;padding:8px;background:#25D366;color:#000;font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);}
+.chat-tg-btn{flex:1;padding:8px;background:#2CA5E0;color:#000;font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);}
+#chat-toggle-btn{width:52px;height:52px;background:linear-gradient(135deg,#00d4ff,#00ff88);border:none;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,212,255,0.4);transition:all .2s;margin-left:auto;}
+#chat-toggle-btn:hover{transform:scale(1.1);}
+#chat-notif-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:#ff4466;border-radius:50%;font-family:'Share Tech Mono',monospace;font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;animation:pulse 1.5s infinite;}
+
+@media(max-width:768px){
+  #ai-recommender{padding:40px 16px;}
+  .ai-input-wrap{flex-direction:column;}
+  .ai-submit{width:100%;}
+  #bundles-section{padding:40px 16px;}
+  .bundles-grid{grid-template-columns:1fr;}
+  #live-chat-widget{bottom:80px;right:12px;}
+  #chat-bubble{width:200px;}
+}
+
+/* SUPPORT CHATBOT */
+#chatbot-wrap{position:fixed;bottom:26px;left:26px;z-index:8500;display:flex;flex-direction:column;align-items:flex-start;gap:10px;}
+#chatbot-window{width:320px;height:440px;background:#040c14;border:1px solid #00d4ff;display:none;flex-direction:column;box-shadow:0 8px 50px rgba(0,212,255,0.2);clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%);animation:notifSlide .3s ease;}
+#chatbot-window.open{display:flex;}
+.cb-header{background:linear-gradient(90deg,#071828,#0a1f30);padding:14px 16px;border-bottom:1px solid #0a3a5c;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.cb-avatar{width:36px;height:36px;background:linear-gradient(135deg,#00d4ff,#00ff88);clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.cb-info{flex:1;}
+.cb-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#fff;letter-spacing:1px;}
+.cb-status{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00ff88;letter-spacing:1px;display:flex;align-items:center;gap:4px;}
+.cb-status-dot{width:6px;height:6px;border-radius:50%;background:#00ff88;animation:pulse 1.5s infinite;}
+.cb-close{background:none;border:1px solid #0a3a5c;color:#4a7a94;width:26px;height:26px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.cb-close:hover{border-color:#ff4466;color:#ff4466;}
+.cb-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;}
+.cb-messages::-webkit-scrollbar{width:3px;}
+.cb-messages::-webkit-scrollbar-thumb{background:#0a3a5c;}
+.cb-msg{display:flex;flex-direction:column;gap:3px;animation:fadeInUp .2s ease;}
+.cb-msg.bot{align-items:flex-start;}
+.cb-msg.user{align-items:flex-end;}
+.cb-bubble{padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.7;letter-spacing:.5px;max-width:85%;}
+.cb-msg.bot .cb-bubble{background:#071828;border:1px solid #0a3a5c;color:#c8e6f0;border-radius:0 10px 10px 10px;}
+.cb-msg.user .cb-bubble{background:rgba(0,212,255,0.1);border:1px solid #00d4ff;color:#fff;border-radius:10px 0 10px 10px;}
+.cb-msg-time{font-family:'Share Tech Mono',monospace;font-size:8px;color:#1a3a4a;letter-spacing:1px;}
+.cb-typing-bubble{background:#071828;border:1px solid #0a3a5c;padding:10px 13px;border-radius:0 10px 10px 10px;display:flex;gap:4px;align-items:center;}
+.cb-quick-replies{padding:8px 14px;display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid #0a3a5c;background:#040c14;flex-shrink:0;}
+.cb-quick-btn{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 9px;background:transparent;color:#00d4ff;border:1px solid #0a3a5c;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.cb-quick-btn:hover{border-color:#00d4ff;background:rgba(0,212,255,0.06);}
+.cb-input-wrap{display:flex;gap:0;border-top:1px solid #0a3a5c;flex-shrink:0;}
+.cb-input{flex:1;background:rgba(0,0,0,0.4);border:none;color:#c8e6f0;font-family:'Share Tech Mono',monospace;font-size:11px;padding:11px 14px;outline:none;letter-spacing:.5px;}
+.cb-input::placeholder{color:#1a3a4a;}
+.cb-send{background:#00d4ff;border:none;color:#000;width:42px;cursor:pointer;font-size:16px;transition:all .2s;flex-shrink:0;}
+.cb-send:hover{background:#fff;}
+#chatbot-toggle{width:50px;height:50px;background:linear-gradient(135deg,#00d4ff,#00ff88);border:none;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,212,255,0.35);transition:all .2s;position:relative;}
+#chatbot-toggle:hover{transform:scale(1.08);box-shadow:0 6px 30px rgba(0,212,255,0.5);}
+#chatbot-badge{position:absolute;top:-5px;right:-5px;width:18px;height:18px;background:#ff4466;border-radius:50%;font-family:'Share Tech Mono',monospace;font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 8px rgba(255,68,102,0.5);animation:pulse 1.5s infinite;}
+.cb-link-btn{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;border:none;cursor:pointer;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);text-decoration:none;}
+.cb-link-btn.wa{background:#25D366;color:#000;}
+.cb-link-btn.tg{background:#2CA5E0;color:#000;}
+
+@media(max-width:768px){
+  #chatbot-wrap{bottom:12px;left:12px;}
+  #chatbot-window{width:calc(100vw - 24px);max-width:320px;height:400px;}
+}
+
+/* NOTIFY PROMPT IN CHATBOT */
+.cb-notify-box{background:rgba(0,212,255,0.04);border:1px solid #00d4ff;padding:12px;margin-top:8px;border-radius:0 8px 8px 8px;}
+.cb-notify-title{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:#00d4ff;letter-spacing:1px;margin-bottom:6px;}
+.cb-notify-msg{font-family:'Share Tech Mono',monospace;font-size:10px;color:#4a7a94;letter-spacing:.5px;line-height:1.6;margin-bottom:10px;}
+.cb-notify-btns{display:flex;gap:7px;flex-wrap:wrap;}
+.cb-notify-wa{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;background:#25D366;color:#000;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer;text-decoration:none;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);transition:all .2s;}
+.cb-notify-tg{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;background:#2CA5E0;color:#000;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer;text-decoration:none;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);transition:all .2s;}
+.cb-notify-wa:hover,.cb-notify-tg:hover{transform:translateY(-2px);filter:brightness(1.1);}
+.cb-notify-skip{font-family:'Share Tech Mono',monospace;font-size:9px;color:#1a3a4a;cursor:pointer;letter-spacing:1px;background:none;border:none;margin-top:4px;transition:color .2s;display:block;text-align:center;}
+.cb-notify-skip:hover{color:#4a7a94;}
+
+/* TRUST BADGES BAR */
+.trust-bar{background:#020408;border-top:1px solid #0a3a5c;border-bottom:1px solid #0a3a5c;padding:14px 20px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 28px;position:relative;z-index:1;}
+.trust-item{display:flex;align-items:center;gap:7px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:1px;white-space:nowrap;}
+.trust-item span.ti{font-size:16px;}
+.trust-item strong{color:#c8e6f0;}
+.trust-divider{color:#0a3a5c;font-size:18px;}
+@media(max-width:600px){.trust-divider{display:none;}.trust-bar{gap:8px 16px;}}
+
+/* FLASH SALE */
+#flash-sale{position:relative;z-index:1;background:#040c14;border-top:2px solid #ff4466;border-bottom:2px solid #ff4466;padding:40px 40px;overflow:hidden;}
+#flash-sale::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,68,102,0.02) 40px,rgba(255,68,102,0.02) 80px);pointer-events:none;}
+.flash-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:24px;}
+.flash-title-wrap{display:flex;align-items:center;gap:14px;}
+.flash-icon{font-size:36px;animation:splashPulse 1s ease-in-out infinite alternate;}
+.flash-title{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:#ff4466;letter-spacing:2px;text-shadow:0 0 20px rgba(255,68,102,0.4);}
+.flash-subtitle{font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:2px;margin-top:3px;}
+.flash-timer-wrap{display:flex;align-items:center;gap:8px;}
+.flash-timer-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#4a7a94;letter-spacing:2px;}
+.flash-timer{display:flex;gap:6px;align-items:center;}
+.flash-digit{background:#0a1f30;border:1px solid #ff4466;padding:8px 12px;font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:#ff4466;min-width:44px;text-align:center;box-shadow:0 0 12px rgba(255,68,102,0.15);}
+.flash-sep{font-family:'Orbitron',monospace;font-size:18px;color:#ff4466;font-weight:900;}
+.flash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.flash-card{background:#071828;border:1px solid #ff4466;padding:18px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));transition:all .25s;cursor:pointer;position:relative;overflow:hidden;}
+.flash-card:hover{transform:translateY(-3px);box-shadow:0 6px 30px rgba(255,68,102,0.2);}
+.flash-card-badge{position:absolute;top:0;right:0;background:#ff4466;color:#fff;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:1px;}
+.flash-card-icon{font-size:28px;margin-bottom:8px;}
+.flash-card-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;letter-spacing:.5px;}
+.flash-card-desc{font-family:'Share Tech Mono',monospace;font-size:10px;color:#4a7a94;line-height:1.6;margin-bottom:12px;letter-spacing:.5px;}
+.flash-card-footer{display:flex;align-items:center;justify-content:space-between;}
+.flash-deal-tag{font-family:'Share Tech Mono',monospace;font-size:10px;color:#ff4466;letter-spacing:1px;border:1px solid rgba(255,68,102,0.3);padding:3px 8px;}
+.flash-card-btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:7px 12px;background:#ff4466;color:#000;border:none;cursor:pointer;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);font-weight:700;transition:all .2s;}
+.flash-card-btn:hover{background:#fff;}
+@media(max-width:768px){#flash-sale{padding:30px 16px;}.flash-grid{grid-template-columns:repeat(2,1fr);}.flash-title{font-size:16px;}}
+@media(max-width:400px){.flash-grid{grid-template-columns:1fr;}}
+
+/* TOP 10 LEADERBOARD */
+#top10-section{position:relative;z-index:1;background:linear-gradient(135deg,#020408,#040c14);border-top:1px solid #0a3a5c;padding:50px 40px;}
+.top10-list{max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
+.top10-item{display:flex;align-items:center;gap:14px;background:#071828;border:1px solid #0a3a5c;padding:14px 18px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));transition:all .25s;cursor:pointer;}
+.top10-item:hover{border-color:#00d4ff;transform:translateX(4px);}
+.top10-item.gold{border-color:#c9a84c;background:linear-gradient(90deg,rgba(201,168,76,0.08),#071828);}
+.top10-item.silver{border-color:#9b9b9b;background:linear-gradient(90deg,rgba(155,155,155,0.06),#071828);}
+.top10-item.bronze{border-color:#cd7f32;background:linear-gradient(90deg,rgba(205,127,50,0.06),#071828);}
+.top10-rank{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;min-width:36px;text-align:center;}
+.top10-item.gold .top10-rank{color:#c9a84c;}
+.top10-item.silver .top10-rank{color:#9b9b9b;}
+.top10-item.bronze .top10-rank{color:#cd7f32;}
+.top10-item:not(.gold):not(.silver):not(.bronze) .top10-rank{color:#1a3a4a;}
+.top10-icon{font-size:24px;min-width:30px;text-align:center;}
+.top10-info{flex:1;}
+.top10-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#fff;letter-spacing:.5px;margin-bottom:3px;}
+.top10-cat{font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a7a94;letter-spacing:2px;}
+.top10-bar-wrap{display:flex;align-items:center;gap:8px;min-width:120px;}
+.top10-bar-track{flex:1;height:4px;background:#0a3a5c;}
+.top10-bar-fill{height:100%;background:linear-gradient(90deg,#00d4ff,#00ff88);transition:width 1.2s ease;}
+.top10-orders{font-family:'Share Tech Mono',monospace;font-size:10px;color:#00d4ff;white-space:nowrap;letter-spacing:1px;}
+@media(max-width:768px){#top10-section{padding:40px 16px;}.top10-bar-wrap{display:none;}}
+
+/* VIP LOYALTY SYSTEM */
+#vip-section{position:relative;z-index:1;background:#020408;border-top:1px solid #0a3a5c;padding:50px 40px;}
+.vip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;max-width:1000px;margin:0 auto;}
+.vip-card{padding:26px 20px;text-align:center;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));border:1px solid var(--vc);background:linear-gradient(135deg,#040c14,#071828);transition:all .3s;position:relative;overflow:hidden;}
+.vip-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--vc),transparent);}
+.vip-card:hover{transform:translateY(-4px);box-shadow:0 8px 40px rgba(0,0,0,0.4);}
+.vip-medal{font-size:44px;margin-bottom:12px;filter:drop-shadow(0 0 8px var(--vc));}
+.vip-name{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--vc);letter-spacing:2px;margin-bottom:6px;}
+.vip-req{font-family:'Share Tech Mono',monospace;font-size:10px;color:#4a7a94;letter-spacing:1px;margin-bottom:14px;}
+.vip-perks{display:flex;flex-direction:column;gap:5px;margin-bottom:16px;}
+.vip-perk{font-family:'Share Tech Mono',monospace;font-size:10px;color:#c8e6f0;letter-spacing:.5px;display:flex;align-items:center;gap:6px;text-align:left;}
+.vip-perk::before{content:'\2713';color:var(--vc);flex-shrink:0;}
+.vip-btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:8px 16px;background:transparent;border:1px solid var(--vc);color:var(--vc);cursor:pointer;transition:all .2s;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);width:100%;}
+.vip-btn:hover{background:var(--vc);color:#000;}
+@media(max-width:768px){#vip-section{padding:40px 16px;}.vip-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:400px){.vip-grid{grid-template-columns:1fr;}}
+
+/* LIVE SALES TICKER */
+#sales-ticker{background:#020408;border-top:1px solid #0a3a5c;border-bottom:1px solid #0a3a5c;padding:10px 0;overflow:hidden;position:relative;z-index:1;}
+#sales-ticker::before{content:'&#128293; LIVE SALES';position:absolute;left:0;top:0;bottom:0;background:#ff4466;color:#fff;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:2px;padding:0 14px;display:flex;align-items:center;z-index:2;white-space:nowrap;}
+.ticker-track{display:flex;gap:0;animation:tickerScroll 35s linear infinite;white-space:nowrap;padding-left:160px;}
+.ticker-track:hover{animation-play-state:paused;}
+.ticker-item{display:inline-flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#c8e6f0;letter-spacing:.5px;padding:0 30px;border-right:1px solid #0a3a5c;}
+.ticker-item .t-flag{font-size:14px;}
+.ticker-item .t-name{color:#00d4ff;font-weight:700;}
+.ticker-item .t-time{color:#1a3a4a;font-size:9px;}
+@keyframes tickerScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* SPIN TO WIN */
+#spin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);}
+#spin-overlay.open{display:flex;}
+#spin-box{background:#040c14;border:1px solid #00d4ff;max-width:460px;width:100%;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));box-shadow:0 0 80px rgba(0,212,255,0.15);text-align:center;padding:30px 24px 24px;animation:modalIn .4s ease;}
+.spin-header{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:4px;}
+.spin-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:2px;margin-bottom:20px;}
+.spin-wheel-wrap{position:relative;width:240px;height:240px;margin:0 auto 20px;}
+#spin-canvas{width:240px;height:240px;border-radius:50%;border:3px solid #00d4ff;box-shadow:0 0 30px rgba(0,212,255,0.3);}
+.spin-pointer{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:28px;filter:drop-shadow(0 0 6px #ff4466);z-index:2;}
+#spin-btn{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;letter-spacing:2px;padding:14px 40px;background:linear-gradient(135deg,#00d4ff,#00ff88);color:#000;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .2s;margin-bottom:12px;width:100%;}
+#spin-btn:hover{box-shadow:0 0 30px rgba(0,212,255,0.5);}
+#spin-btn:disabled{opacity:.5;cursor:not-allowed;}
+#spin-result{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:#00ff88;letter-spacing:1px;min-height:24px;margin-bottom:12px;}
+.spin-wa-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:#25D366;color:#000;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;border:none;cursor:pointer;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);text-decoration:none;transition:all .2s;margin-bottom:8px;}
+.spin-wa-btn:hover{background:#fff;}
+.spin-close-btn{font-family:'Share Tech Mono',monospace;font-size:11px;color:#1a3a4a;background:none;border:none;cursor:pointer;letter-spacing:1px;transition:color .2s;}
+.spin-close-btn:hover{color:#4a7a94;}
+#spin-trigger{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:4000;background:#ff4466;color:#fff;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;padding:12px 6px;cursor:pointer;border:none;writing-mode:vertical-rl;text-orientation:mixed;box-shadow:4px 0 20px rgba(255,68,102,0.3);transition:all .2s;clip-path:polygon(0 0,100% 4px,100% calc(100% - 4px),0 100%);}
+#spin-trigger:hover{background:#fff;color:#ff4466;padding-left:10px;}
+
+/* PDF CATALOG */
+#pdf-btn-wrap{position:fixed;bottom:26px;right:90px;z-index:4000;}
+#pdf-dl-btn{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;padding:10px 14px;background:#040c14;border:1px solid #0a3a5c;color:#4a7a94;cursor:pointer;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);transition:all .2s;display:flex;align-items:center;gap:6px;box-shadow:0 2px 16px rgba(0,0,0,0.4);}
+#pdf-dl-btn:hover{border-color:#00d4ff;color:#00d4ff;box-shadow:0 2px 20px rgba(0,212,255,0.15);}
+
+@media(max-width:768px){
+  #sales-ticker::before{font-size:0;padding:0 8px;width:30px;}
+  .ticker-track{padding-left:38px;}
+  #spin-trigger{font-size:0;padding:10px 5px;width:20px;}
+  #pdf-btn-wrap{bottom:12px;right:76px;}
+}
+
+/* ===== PREMIUM DESIGN ENHANCEMENTS ===== */
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:#010610;}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00d4ff,#00ff88);border-radius:2px;}
+
+/* Section backgrounds — alternating depth */
+.section{background:linear-gradient(180deg,var(--bg2),var(--bg));}
+#bundles-section{background:linear-gradient(180deg,var(--bg),var(--bg2));}
+#vip-section{background:linear-gradient(180deg,var(--bg2),var(--bg));}
+#top10-section{background:linear-gradient(180deg,var(--bg),var(--bg2));}
+
+/* Product card — shimmer line on top */
+.product-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,212,255,0.4),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.product-card:hover::after{opacity:1;}
+
+/* Tool name — better typography */
+.tool-name{
+  font-family:'Orbitron',monospace;
+  font-size:13px;font-weight:700;
+  color:#fff;letter-spacing:.5px;
+  margin-bottom:6px;line-height:1.3;
+}
+
+/* Tool description — better readability */
+.tool-desc{
+  font-family:'Inter','Space Grotesk',sans-serif;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.7;
+  font-weight:300;
+  letter-spacing:0.2px;
+}
+
+/* Category badge — more premium */
+.cat-badge{
+  font-family:'Space Grotesk',monospace;
+  font-size:9px;font-weight:600;
+  letter-spacing:2px;text-transform:uppercase;
+}
+
+/* Modal upgrade */
+.modal{
+  background:linear-gradient(135deg,#030c1a,#071828);
+  border:1px solid rgba(0,212,255,0.2);
+  box-shadow:0 20px 80px rgba(0,0,0,0.8),0 0 0 1px rgba(0,212,255,0.08);
+}
+
+/* FAQ items — better look */
+.faq-item{
+  border:1px solid var(--border);
+  background:linear-gradient(135deg,var(--panel2),var(--panel));
+  transition:border-color .25s,box-shadow .25s;
+}
+.faq-item:hover{
+  border-color:rgba(0,212,255,0.3);
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* Bundle cards — glass shine */
+.bundle-card::after{
+  content:'';position:absolute;
+  top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.03),transparent);
+  transition:left .6s ease;
+}
+.bundle-card:hover::after{left:140%;}
+
+/* VIP cards — glow pulse */
+.vip-card:hover .vip-medal{
+  animation:splashPulse .6s ease-in-out;
+  filter:drop-shadow(0 0 16px var(--vc));
+}
+
+/* Top 10 — hover glow */
+.top10-item:hover{
+  box-shadow:0 4px 20px rgba(0,0,0,0.4),inset 0 0 20px rgba(0,212,255,0.03);
+}
+
+/* Trust bar — better spacing */
+.trust-bar{
+  padding:12px 24px;
+  background:linear-gradient(90deg,var(--bg2),var(--bg3),var(--bg2));
+}
+
+/* Flash sale — animated border */
+#flash-sale{
+  background:linear-gradient(135deg,#020408,#050d18,#020408);
+}
+
+/* How-it-works steps — better styling */
+.how-step{
+  background:linear-gradient(135deg,var(--panel2),var(--panel));
+  border:1px solid var(--border);
+  transition:transform .3s,border-color .3s,box-shadow .3s;
+}
+.how-step:hover{
+  transform:translateY(-4px);
+  border-color:rgba(0,212,255,0.3);
+  box-shadow:0 8px 30px rgba(0,0,0,0.4),var(--shadow-glow);
+}
+
+/* Testimonials — glass effect */
+.testimonial-card,.review-card{
+  background:linear-gradient(135deg,var(--panel2),var(--panel));
+  border:1px solid var(--border);
+  backdrop-filter:blur(4px);
+}
+
+/* Input fields — better focus */
+input:focus,textarea:focus,.ai-input:focus,.cb-input:focus{
+  border-color:var(--glow) !important;
+  box-shadow:0 0 0 2px rgba(0,212,255,0.1),0 0 20px rgba(0,212,255,0.08) !important;
+  outline:none !important;
+}
+
+/* Section tags — premium pill style */
+.section-tag{
+  font-family:'Space Grotesk',monospace;
+  font-size:10px;font-weight:600;
+  letter-spacing:3px;text-transform:uppercase;
+  color:var(--glow);
+  background:rgba(0,212,255,0.06);
+  border:1px solid rgba(0,212,255,0.2);
+  padding:4px 14px;
+  border-radius:2px;
+}
+
+/* Nav links — better hover */
+.nav-link{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:12px;font-weight:500;
+  letter-spacing:1.5px;
+  transition:color .2s,text-shadow .2s;
+}
+.nav-link:hover{
+  color:#fff;
+  text-shadow:0 0 12px rgba(0,212,255,0.5);
+}
+
+/* Stat numbers — glow */
+.stat-num{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(28px,4vw,44px);
+  font-weight:900;
+  background:linear-gradient(135deg,#fff,var(--glow));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+/* Announcement banner — more visible */
+#announce-banner{
+  background:linear-gradient(90deg,#0a0020,#0d0530,#0a0020);
+  border-bottom:1px solid rgba(0,212,255,0.1);
+}
+
+/* Cart sidebar */
+#cart-sidebar{
+  background:linear-gradient(180deg,#030c1a,#071828);
+  border-left:1px solid rgba(0,212,255,0.15);
+  box-shadow:-8px 0 40px rgba(0,0,0,0.6);
+}
+
+/* Chatbot — premium look */
+#chatbot-window{
+  background:linear-gradient(180deg,#030c1a,#040e1c);
+  border:1px solid rgba(0,212,255,0.2);
+  box-shadow:0 16px 60px rgba(0,0,0,0.7),0 0 0 1px rgba(0,212,255,0.06);
+}
+
+/* AI recommender */
+#ai-recommender{
+  background:linear-gradient(135deg,#010610,#030b16,#010610);
+}
+
+/* Result cards — premium */
+.ai-result-card{
+  background:linear-gradient(135deg,var(--panel2),var(--panel));
+  border:1px solid rgba(0,255,136,0.15);
+  transition:transform .25s,border-color .25s,box-shadow .25s;
+}
+.ai-result-card:hover{
+  transform:translateY(-4px);
+  border-color:var(--glow2);
+  box-shadow:0 8px 30px rgba(0,0,0,0.4),0 0 20px rgba(0,255,136,0.08);
+}
+
+/* Filter buttons — more premium */
+.filter-btn{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:11px;font-weight:500;
+  letter-spacing:1px;
+  transition:all .2s ease;
+}
+.filter-btn.active,.filter-btn:hover{
+  background:rgba(0,212,255,0.08);
+  box-shadow:0 0 16px rgba(0,212,255,0.12);
+}
+
+/* Compare table */
+.compare-table th{
+  background:linear-gradient(90deg,#071828,#0a1f35);
+  font-family:'Space Grotesk',sans-serif;
+}
+
+/* Spin box */
+#spin-box{
+  background:linear-gradient(135deg,#030c1a,#071828);
+  border:1px solid rgba(0,212,255,0.2);
+  box-shadow:0 20px 80px rgba(0,0,0,0.8),0 0 60px rgba(0,212,255,0.06);
+}
+
+/* PDF button */
+#pdf-dl-btn{
+  background:linear-gradient(135deg,#040c14,#071828);
+  backdrop-filter:blur(10px);
+}
+
+/* Smooth image rendering */
+img{image-rendering:-webkit-optimize-contrast;}
+
+/* Selection color */
+::selection{background:rgba(0,212,255,0.2);color:#fff;}
+::-moz-selection{background:rgba(0,212,255,0.2);color:#fff;}
+
+
+/* PWA INSTALL PROMPT */
+#pwa-prompt{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:9000;background:#040c14;border:1px solid #00d4ff;padding:14px 18px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));box-shadow:0 8px 40px rgba(0,0,0,0.7),0 0 30px rgba(0,212,255,0.1);display:none;align-items:center;gap:14px;max-width:340px;width:90%;animation:notifSlide .4s ease;}
+#pwa-prompt.show{display:flex;}
+.pwa-prompt-icon{font-size:28px;flex-shrink:0;}
+.pwa-prompt-text{flex:1;}
+.pwa-prompt-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:#fff;letter-spacing:1px;margin-bottom:3px;}
+.pwa-prompt-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a7a94;letter-spacing:.5px;line-height:1.6;}
+.pwa-prompt-btns{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+.pwa-install-btn{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;padding:7px 12px;background:#00d4ff;color:#000;border:none;cursor:pointer;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);white-space:nowrap;transition:all .2s;}
+.pwa-install-btn:hover{background:#fff;}
+.pwa-dismiss-btn{font-family:'Share Tech Mono',monospace;font-size:9px;color:#1a3a4a;background:none;border:none;cursor:pointer;letter-spacing:1px;text-align:center;transition:color .2s;}
+.pwa-dismiss-btn:hover{color:#4a7a94;}
+
 </style>
+
+  <!-- PWA META TAGS -->
+  <meta name="application-name" content="SNEAGTTOOLSTEC">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SNEAGTTOOLSTEC">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#00d4ff">
+  <meta name="msapplication-TileColor" content="#010610">
+  <meta name="msapplication-navbutton-color" content="#00d4ff">
+  <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22SNEAGTTOOLSTEC%22%2C%22short_name%22%3A%22SNEAGT%22%2C%22description%22%3A%22Professional%20Cybersecurity%20Tools%20Store%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23010610%22%2C%22theme_color%22%3A%22%2300d4ff%22%2C%22orientation%22%3A%22portrait-primary%22%7D">
 </head>
 <body>
 
@@ -715,7 +1678,335 @@ body{padding-top:32px;}
 
 /* CURSOR TRAIL */
 .cursor-dot{position:fixed;pointer-events:none;z-index:99999;border-radius:50%;transform:translate(-50%,-50%);}
+
+/* TERMS DISCLAIMER POPUP */
+#terms-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:999998;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);}
+#terms-box{background:#040c14;border:1px solid #00d4ff;max-width:520px;width:100%;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,22px 100%,0 calc(100% - 22px));box-shadow:0 0 60px rgba(0,212,255,0.2);animation:modalIn .4s ease;}
+#terms-box .t-header{padding:22px 26px;border-bottom:1px solid #0a3a5c;text-align:center;}
+#terms-box .t-icon{font-size:42px;margin-bottom:10px;}
+#terms-box .t-title{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:5px;}
+#terms-box .t-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:#00d4ff;letter-spacing:3px;}
+#terms-box .t-body{padding:22px 26px;}
+#terms-box .t-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;line-height:1.8;letter-spacing:.5px;}
+#terms-box .t-item span{color:#00d4ff;flex-shrink:0;font-size:14px;}
+#terms-box .t-item strong{color:#c8e6f0;}
+#terms-box .t-footer{padding:0 26px 22px;display:flex;flex-direction:column;gap:10px;}
+#terms-agree{font-family:'Orbitron',monospace;font-size:12px;font-weight:900;letter-spacing:2px;padding:14px;background:#00d4ff;color:#000;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .2s;width:100%;box-shadow:0 0 20px rgba(0,212,255,0.3);}
+#terms-agree:hover{background:#fff;box-shadow:0 0 40px rgba(0,212,255,0.6);}
+#terms-decline{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;padding:10px;background:transparent;color:#4a7a94;border:1px solid #1a3a4a;cursor:pointer;width:100%;transition:all .2s;}
+#terms-decline:hover{border-color:#ff4466;color:#ff4466;}
+.t-warning{font-family:'Share Tech Mono',monospace;font-size:10px;color:#ff4466;text-align:center;letter-spacing:1px;padding:8px;border:1px solid rgba(255,68,102,0.2);background:rgba(255,68,102,0.04);margin-bottom:10px;}
+
+/* GLITCH EFFECT */
+.glitch{position:relative;animation:glitchMain 4s infinite;}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;}
+.glitch::before{color:#ff4466;animation:glitchTop 4s infinite;clip-path:polygon(0 0,100% 0,100% 35%,0 35%);}
+.glitch::after{color:#00d4ff;animation:glitchBottom 4s infinite;clip-path:polygon(0 65%,100% 65%,100% 100%,0 100%);}
+@keyframes glitchMain{0%,90%,100%{transform:none;opacity:1;}92%{transform:skew(-1deg);opacity:.8;}94%{transform:skew(1deg) translateX(2px);}96%{transform:none;}}
+@keyframes glitchTop{0%,90%,100%{transform:none;opacity:0;}92%{transform:translateX(-3px);opacity:.8;}94%{transform:translateX(3px);opacity:.6;}96%{transform:none;opacity:0;}}
+@keyframes glitchBottom{0%,90%,100%{transform:none;opacity:0;}92%{transform:translateX(3px);opacity:.8;}94%{transform:translateX(-3px);opacity:.6;}96%{transform:none;opacity:0;}}
+
+/* POPULARITY BAR */
+.pop-bar-wrap{margin:8px 0;display:flex;align-items:center;gap:8px;}
+.pop-bar-track{flex:1;height:4px;background:#1a3a4a;overflow:hidden;}
+.pop-bar-fill{height:100%;background:linear-gradient(90deg,#00d4ff,#00ff88);transition:width 1s ease;}
+.pop-bar-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00d4ff;letter-spacing:1px;white-space:nowrap;}
+
+/* TOOL COMPARISON */
+#compare-bar{position:fixed;bottom:0;left:0;right:0;z-index:7000;background:#040c14;border-top:2px solid #00d4ff;padding:12px 24px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 -4px 30px rgba(0,212,255,0.15);}
+.compare-bar-title{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#fff;letter-spacing:1px;}
+.compare-slots{display:flex;gap:10px;flex:1;flex-wrap:wrap;}
+.compare-slot{background:#071828;border:1px solid #0a3a5c;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:1px;display:flex;align-items:center;gap:8px;min-width:160px;}
+.compare-slot.filled{border-color:#00d4ff;color:#fff;}
+.compare-slot-remove{cursor:pointer;color:#ff4466;font-size:14px;margin-left:auto;}
+.compare-actions{display:flex;gap:8px;}
+.btn-compare-go{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;padding:10px 20px;background:#00d4ff;color:#000;border:none;cursor:pointer;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);transition:all .2s;}
+.btn-compare-go:hover{background:#fff;}
+.btn-compare-clear{font-family:'Share Tech Mono',monospace;font-size:11px;padding:10px 16px;background:transparent;color:#4a7a94;border:1px solid #1a3a4a;cursor:pointer;transition:all .2s;}
+.btn-compare-clear:hover{border-color:#ff4466;color:#ff4466;}
+#compare-modal .modal-body{padding:0;}
+.compare-table{width:100%;border-collapse:collapse;}
+.compare-table th{background:#071828;padding:14px 16px;font-family:'Orbitron',monospace;font-size:11px;color:#00d4ff;letter-spacing:1px;text-align:left;border-bottom:1px solid #0a3a5c;}
+.compare-table td{padding:12px 16px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#c8e6f0;border-bottom:1px solid #071828;vertical-align:top;line-height:1.7;}
+.compare-table tr:hover td{background:rgba(0,212,255,0.03);}
+.compare-table .row-label{color:#4a7a94;font-size:10px;letter-spacing:1px;text-transform:uppercase;width:100px;}
+
+/* FRENCH LANGUAGE */
+.lang-toggle{display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer;padding:5px 10px;border:1px solid #0a3a5c;color:#4a7a94;transition:all .2s;background:transparent;}
+.lang-toggle:hover{border-color:#00d4ff;color:#00d4ff;}
+.lang-toggle.active{border-color:#00d4ff;color:#00d4ff;background:rgba(0,212,255,0.06);}
+[data-fr]{display:none;}
+body.fr-mode [data-en]{display:none !important;}
+body.fr-mode [data-fr]{display:revert !important;}
+
+/* AI TOOL RECOMMENDER */
+#ai-recommender{position:relative;z-index:1;background:linear-gradient(135deg,#020408,#040c14,#071828);border-top:1px solid #0a3a5c;border-bottom:1px solid #0a3a5c;padding:60px 40px;}
+.ai-inner{max-width:800px;margin:0 auto;text-align:center;}
+.ai-icon-wrap{width:80px;height:80px;border:1px solid #00d4ff;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 18px;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);background:rgba(0,212,255,0.06);box-shadow:0 0 30px rgba(0,212,255,0.1);animation:splashPulse 2s ease-in-out infinite alternate;}
+.ai-input-wrap{display:flex;gap:10px;margin:24px 0;flex-wrap:wrap;}
+.ai-input{flex:1;min-width:200px;background:rgba(0,212,255,0.04);border:1px solid #0a3a5c;color:#c8e6f0;font-family:'Share Tech Mono',monospace;font-size:13px;padding:14px 18px;outline:none;transition:border-color .2s;letter-spacing:1px;}
+.ai-input:focus{border-color:#00d4ff;box-shadow:0 0 15px rgba(0,212,255,0.15);}
+.ai-input::placeholder{color:#1a3a4a;}
+.ai-submit{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:2px;padding:14px 28px;background:#00d4ff;color:#000;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .2s;white-space:nowrap;}
+.ai-submit:hover{background:#fff;box-shadow:0 0 30px rgba(0,212,255,0.5);}
+.ai-submit:disabled{opacity:.5;cursor:not-allowed;}
+.ai-suggestions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px;}
+.ai-suggestion-btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:6px 12px;background:transparent;color:#4a7a94;border:1px solid #1a3a4a;cursor:pointer;transition:all .2s;}
+.ai-suggestion-btn:hover{border-color:#00d4ff;color:#00d4ff;}
+#ai-results{margin-top:24px;text-align:left;display:none;}
+.ai-results-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#00ff88;letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.ai-result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+.ai-result-card{background:#071828;border:1px solid #00ff88;padding:16px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));cursor:pointer;transition:all .2s;}
+.ai-result-card:hover{border-color:#fff;transform:translateY(-2px);}
+.ai-result-icon{font-size:24px;margin-bottom:8px;}
+.ai-result-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;}
+.ai-result-reason{font-family:'Share Tech Mono',monospace;font-size:10px;color:#00ff88;letter-spacing:.5px;line-height:1.6;margin-bottom:8px;}
+.ai-result-cat{font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a7a94;letter-spacing:2px;}
+.ai-typing{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#00d4ff;letter-spacing:2px;margin:16px 0;}
+.ai-typing-dots{display:flex;gap:4px;}
+.ai-typing-dot{width:6px;height:6px;border-radius:50%;background:#00d4ff;animation:typingBounce 1.2s infinite;}
+.ai-typing-dot:nth-child(2){animation-delay:.2s;}
+.ai-typing-dot:nth-child(3){animation-delay:.4s;}
+
+/* TOOL BUNDLES */
+#bundles-section{position:relative;z-index:1;background:#020408;border-top:1px solid #0a3a5c;padding:60px 40px;}
+.bundles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
+.bundle-card{background:linear-gradient(135deg,#040c14,#071828);border:1px solid #0a3a5c;padding:24px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));transition:all .3s;position:relative;overflow:hidden;cursor:pointer;}
+.bundle-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--bundle-color),transparent);opacity:.7;}
+.bundle-card:hover{transform:translateY(-4px);box-shadow:0 8px 40px rgba(0,0,0,0.4);}
+.bundle-badge{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;padding:3px 10px;border:1px solid var(--bundle-color);color:var(--bundle-color);display:inline-block;margin-bottom:12px;}
+.bundle-icon{font-size:36px;margin-bottom:12px;}
+.bundle-name{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:1px;}
+.bundle-desc{font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;line-height:1.8;margin-bottom:14px;letter-spacing:.5px;}
+.bundle-tools{display:flex;flex-direction:column;gap:5px;margin-bottom:16px;}
+.bundle-tool-item{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#c8e6f0;}
+.bundle-tool-item::before{content:'\25B8';color:var(--bundle-color);}
+.bundle-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #0a3a5c;padding-top:14px;}
+.bundle-count{font-family:'Orbitron',monospace;font-size:11px;color:var(--bundle-color);letter-spacing:1px;}
+.bundle-btn{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;padding:8px 16px;background:transparent;border:1px solid var(--bundle-color);color:var(--bundle-color);cursor:pointer;transition:all .2s;clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);}
+.bundle-btn:hover{background:var(--bundle-color);color:#000;}
+.bundle-popular{position:absolute;top:12px;right:12px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:3px 8px;background:rgba(255,68,102,0.15);border:1px solid #ff4466;color:#ff4466;}
+
+/* LIVE CHAT WIDGET */
+#live-chat-widget{position:fixed;bottom:100px;right:26px;z-index:4500;}
+#chat-bubble{background:linear-gradient(135deg,#071828,#0a1f30);border:1px solid #00d4ff;padding:14px 18px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));box-shadow:0 4px 30px rgba(0,212,255,0.2);display:none;margin-bottom:10px;width:240px;animation:notifSlide .3s ease;}
+.chat-bubble-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.chat-bubble-dot{width:8px;height:8px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:pulse 1.5s infinite;}
+.chat-bubble-name{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:#fff;}
+.chat-bubble-status{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00ff88;letter-spacing:1px;}
+.chat-bubble-msg{font-family:'Share Tech Mono',monospace;font-size:11px;color:#c8e6f0;line-height:1.7;margin-bottom:12px;letter-spacing:.5px;}
+.chat-bubble-actions{display:flex;gap:7px;}
+.chat-wa-btn{flex:1;padding:8px;background:#25D366;color:#000;font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);}
+.chat-tg-btn{flex:1;padding:8px;background:#2CA5E0;color:#000;font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);}
+#chat-toggle-btn{width:52px;height:52px;background:linear-gradient(135deg,#00d4ff,#00ff88);border:none;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,212,255,0.4);transition:all .2s;margin-left:auto;}
+#chat-toggle-btn:hover{transform:scale(1.1);}
+#chat-notif-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:#ff4466;border-radius:50%;font-family:'Share Tech Mono',monospace;font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;animation:pulse 1.5s infinite;}
+
+@media(max-width:768px){
+  #ai-recommender{padding:40px 16px;}
+  .ai-input-wrap{flex-direction:column;}
+  .ai-submit{width:100%;}
+  #bundles-section{padding:40px 16px;}
+  .bundles-grid{grid-template-columns:1fr;}
+  #live-chat-widget{bottom:80px;right:12px;}
+  #chat-bubble{width:200px;}
+}
+
+/* SUPPORT CHATBOT */
+#chatbot-wrap{position:fixed;bottom:26px;left:26px;z-index:8500;display:flex;flex-direction:column;align-items:flex-start;gap:10px;}
+#chatbot-window{width:320px;height:440px;background:#040c14;border:1px solid #00d4ff;display:none;flex-direction:column;box-shadow:0 8px 50px rgba(0,212,255,0.2);clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%);animation:notifSlide .3s ease;}
+#chatbot-window.open{display:flex;}
+.cb-header{background:linear-gradient(90deg,#071828,#0a1f30);padding:14px 16px;border-bottom:1px solid #0a3a5c;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.cb-avatar{width:36px;height:36px;background:linear-gradient(135deg,#00d4ff,#00ff88);clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.cb-info{flex:1;}
+.cb-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#fff;letter-spacing:1px;}
+.cb-status{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00ff88;letter-spacing:1px;display:flex;align-items:center;gap:4px;}
+.cb-status-dot{width:6px;height:6px;border-radius:50%;background:#00ff88;animation:pulse 1.5s infinite;}
+.cb-close{background:none;border:1px solid #0a3a5c;color:#4a7a94;width:26px;height:26px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.cb-close:hover{border-color:#ff4466;color:#ff4466;}
+.cb-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;}
+.cb-messages::-webkit-scrollbar{width:3px;}
+.cb-messages::-webkit-scrollbar-thumb{background:#0a3a5c;}
+.cb-msg{display:flex;flex-direction:column;gap:3px;animation:fadeInUp .2s ease;}
+.cb-msg.bot{align-items:flex-start;}
+.cb-msg.user{align-items:flex-end;}
+.cb-bubble{padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.7;letter-spacing:.5px;max-width:85%;}
+.cb-msg.bot .cb-bubble{background:#071828;border:1px solid #0a3a5c;color:#c8e6f0;border-radius:0 10px 10px 10px;}
+.cb-msg.user .cb-bubble{background:rgba(0,212,255,0.1);border:1px solid #00d4ff;color:#fff;border-radius:10px 0 10px 10px;}
+.cb-msg-time{font-family:'Share Tech Mono',monospace;font-size:8px;color:#1a3a4a;letter-spacing:1px;}
+.cb-typing-bubble{background:#071828;border:1px solid #0a3a5c;padding:10px 13px;border-radius:0 10px 10px 10px;display:flex;gap:4px;align-items:center;}
+.cb-quick-replies{padding:8px 14px;display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid #0a3a5c;background:#040c14;flex-shrink:0;}
+.cb-quick-btn{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 9px;background:transparent;color:#00d4ff;border:1px solid #0a3a5c;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.cb-quick-btn:hover{border-color:#00d4ff;background:rgba(0,212,255,0.06);}
+.cb-input-wrap{display:flex;gap:0;border-top:1px solid #0a3a5c;flex-shrink:0;}
+.cb-input{flex:1;background:rgba(0,0,0,0.4);border:none;color:#c8e6f0;font-family:'Share Tech Mono',monospace;font-size:11px;padding:11px 14px;outline:none;letter-spacing:.5px;}
+.cb-input::placeholder{color:#1a3a4a;}
+.cb-send{background:#00d4ff;border:none;color:#000;width:42px;cursor:pointer;font-size:16px;transition:all .2s;flex-shrink:0;}
+.cb-send:hover{background:#fff;}
+#chatbot-toggle{width:50px;height:50px;background:linear-gradient(135deg,#00d4ff,#00ff88);border:none;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,212,255,0.35);transition:all .2s;position:relative;}
+#chatbot-toggle:hover{transform:scale(1.08);box-shadow:0 6px 30px rgba(0,212,255,0.5);}
+#chatbot-badge{position:absolute;top:-5px;right:-5px;width:18px;height:18px;background:#ff4466;border-radius:50%;font-family:'Share Tech Mono',monospace;font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 8px rgba(255,68,102,0.5);animation:pulse 1.5s infinite;}
+.cb-link-btn{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;border:none;cursor:pointer;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);text-decoration:none;}
+.cb-link-btn.wa{background:#25D366;color:#000;}
+.cb-link-btn.tg{background:#2CA5E0;color:#000;}
+
+@media(max-width:768px){
+  #chatbot-wrap{bottom:12px;left:12px;}
+  #chatbot-window{width:calc(100vw - 24px);max-width:320px;height:400px;}
+}
+
+/* NOTIFY PROMPT IN CHATBOT */
+.cb-notify-box{background:rgba(0,212,255,0.04);border:1px solid #00d4ff;padding:12px;margin-top:8px;border-radius:0 8px 8px 8px;}
+.cb-notify-title{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:#00d4ff;letter-spacing:1px;margin-bottom:6px;}
+.cb-notify-msg{font-family:'Share Tech Mono',monospace;font-size:10px;color:#4a7a94;letter-spacing:.5px;line-height:1.6;margin-bottom:10px;}
+.cb-notify-btns{display:flex;gap:7px;flex-wrap:wrap;}
+.cb-notify-wa{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;background:#25D366;color:#000;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer;text-decoration:none;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);transition:all .2s;}
+.cb-notify-tg{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;background:#2CA5E0;color:#000;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;border:none;cursor:pointer;text-decoration:none;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);transition:all .2s;}
+.cb-notify-wa:hover,.cb-notify-tg:hover{transform:translateY(-2px);filter:brightness(1.1);}
+.cb-notify-skip{font-family:'Share Tech Mono',monospace;font-size:9px;color:#1a3a4a;cursor:pointer;letter-spacing:1px;background:none;border:none;margin-top:4px;transition:color .2s;display:block;text-align:center;}
+.cb-notify-skip:hover{color:#4a7a94;}
+
+/* TRUST BADGES BAR */
+.trust-bar{background:#020408;border-top:1px solid #0a3a5c;border-bottom:1px solid #0a3a5c;padding:14px 20px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 28px;position:relative;z-index:1;}
+.trust-item{display:flex;align-items:center;gap:7px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:1px;white-space:nowrap;}
+.trust-item span.ti{font-size:16px;}
+.trust-item strong{color:#c8e6f0;}
+.trust-divider{color:#0a3a5c;font-size:18px;}
+@media(max-width:600px){.trust-divider{display:none;}.trust-bar{gap:8px 16px;}}
+
+/* FLASH SALE */
+#flash-sale{position:relative;z-index:1;background:#040c14;border-top:2px solid #ff4466;border-bottom:2px solid #ff4466;padding:40px 40px;overflow:hidden;}
+#flash-sale::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,68,102,0.02) 40px,rgba(255,68,102,0.02) 80px);pointer-events:none;}
+.flash-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:24px;}
+.flash-title-wrap{display:flex;align-items:center;gap:14px;}
+.flash-icon{font-size:36px;animation:splashPulse 1s ease-in-out infinite alternate;}
+.flash-title{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:#ff4466;letter-spacing:2px;text-shadow:0 0 20px rgba(255,68,102,0.4);}
+.flash-subtitle{font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:2px;margin-top:3px;}
+.flash-timer-wrap{display:flex;align-items:center;gap:8px;}
+.flash-timer-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#4a7a94;letter-spacing:2px;}
+.flash-timer{display:flex;gap:6px;align-items:center;}
+.flash-digit{background:#0a1f30;border:1px solid #ff4466;padding:8px 12px;font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:#ff4466;min-width:44px;text-align:center;box-shadow:0 0 12px rgba(255,68,102,0.15);}
+.flash-sep{font-family:'Orbitron',monospace;font-size:18px;color:#ff4466;font-weight:900;}
+.flash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.flash-card{background:#071828;border:1px solid #ff4466;padding:18px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));transition:all .25s;cursor:pointer;position:relative;overflow:hidden;}
+.flash-card:hover{transform:translateY(-3px);box-shadow:0 6px 30px rgba(255,68,102,0.2);}
+.flash-card-badge{position:absolute;top:0;right:0;background:#ff4466;color:#fff;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;padding:4px 10px;letter-spacing:1px;}
+.flash-card-icon{font-size:28px;margin-bottom:8px;}
+.flash-card-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;letter-spacing:.5px;}
+.flash-card-desc{font-family:'Share Tech Mono',monospace;font-size:10px;color:#4a7a94;line-height:1.6;margin-bottom:12px;letter-spacing:.5px;}
+.flash-card-footer{display:flex;align-items:center;justify-content:space-between;}
+.flash-deal-tag{font-family:'Share Tech Mono',monospace;font-size:10px;color:#ff4466;letter-spacing:1px;border:1px solid rgba(255,68,102,0.3);padding:3px 8px;}
+.flash-card-btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:7px 12px;background:#ff4466;color:#000;border:none;cursor:pointer;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);font-weight:700;transition:all .2s;}
+.flash-card-btn:hover{background:#fff;}
+@media(max-width:768px){#flash-sale{padding:30px 16px;}.flash-grid{grid-template-columns:repeat(2,1fr);}.flash-title{font-size:16px;}}
+@media(max-width:400px){.flash-grid{grid-template-columns:1fr;}}
+
+/* TOP 10 LEADERBOARD */
+#top10-section{position:relative;z-index:1;background:linear-gradient(135deg,#020408,#040c14);border-top:1px solid #0a3a5c;padding:50px 40px;}
+.top10-list{max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
+.top10-item{display:flex;align-items:center;gap:14px;background:#071828;border:1px solid #0a3a5c;padding:14px 18px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));transition:all .25s;cursor:pointer;}
+.top10-item:hover{border-color:#00d4ff;transform:translateX(4px);}
+.top10-item.gold{border-color:#c9a84c;background:linear-gradient(90deg,rgba(201,168,76,0.08),#071828);}
+.top10-item.silver{border-color:#9b9b9b;background:linear-gradient(90deg,rgba(155,155,155,0.06),#071828);}
+.top10-item.bronze{border-color:#cd7f32;background:linear-gradient(90deg,rgba(205,127,50,0.06),#071828);}
+.top10-rank{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;min-width:36px;text-align:center;}
+.top10-item.gold .top10-rank{color:#c9a84c;}
+.top10-item.silver .top10-rank{color:#9b9b9b;}
+.top10-item.bronze .top10-rank{color:#cd7f32;}
+.top10-item:not(.gold):not(.silver):not(.bronze) .top10-rank{color:#1a3a4a;}
+.top10-icon{font-size:24px;min-width:30px;text-align:center;}
+.top10-info{flex:1;}
+.top10-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#fff;letter-spacing:.5px;margin-bottom:3px;}
+.top10-cat{font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a7a94;letter-spacing:2px;}
+.top10-bar-wrap{display:flex;align-items:center;gap:8px;min-width:120px;}
+.top10-bar-track{flex:1;height:4px;background:#0a3a5c;}
+.top10-bar-fill{height:100%;background:linear-gradient(90deg,#00d4ff,#00ff88);transition:width 1.2s ease;}
+.top10-orders{font-family:'Share Tech Mono',monospace;font-size:10px;color:#00d4ff;white-space:nowrap;letter-spacing:1px;}
+@media(max-width:768px){#top10-section{padding:40px 16px;}.top10-bar-wrap{display:none;}}
+
+/* VIP LOYALTY SYSTEM */
+#vip-section{position:relative;z-index:1;background:#020408;border-top:1px solid #0a3a5c;padding:50px 40px;}
+.vip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;max-width:1000px;margin:0 auto;}
+.vip-card{padding:26px 20px;text-align:center;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));border:1px solid var(--vc);background:linear-gradient(135deg,#040c14,#071828);transition:all .3s;position:relative;overflow:hidden;}
+.vip-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--vc),transparent);}
+.vip-card:hover{transform:translateY(-4px);box-shadow:0 8px 40px rgba(0,0,0,0.4);}
+.vip-medal{font-size:44px;margin-bottom:12px;filter:drop-shadow(0 0 8px var(--vc));}
+.vip-name{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--vc);letter-spacing:2px;margin-bottom:6px;}
+.vip-req{font-family:'Share Tech Mono',monospace;font-size:10px;color:#4a7a94;letter-spacing:1px;margin-bottom:14px;}
+.vip-perks{display:flex;flex-direction:column;gap:5px;margin-bottom:16px;}
+.vip-perk{font-family:'Share Tech Mono',monospace;font-size:10px;color:#c8e6f0;letter-spacing:.5px;display:flex;align-items:center;gap:6px;text-align:left;}
+.vip-perk::before{content:'\2713';color:var(--vc);flex-shrink:0;}
+.vip-btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:8px 16px;background:transparent;border:1px solid var(--vc);color:var(--vc);cursor:pointer;transition:all .2s;clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);width:100%;}
+.vip-btn:hover{background:var(--vc);color:#000;}
+@media(max-width:768px){#vip-section{padding:40px 16px;}.vip-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:400px){.vip-grid{grid-template-columns:1fr;}}
+
+/* LIVE SALES TICKER */
+#sales-ticker{background:#020408;border-top:1px solid #0a3a5c;border-bottom:1px solid #0a3a5c;padding:10px 0;overflow:hidden;position:relative;z-index:1;}
+#sales-ticker::before{content:'&#128293; LIVE SALES';position:absolute;left:0;top:0;bottom:0;background:#ff4466;color:#fff;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:2px;padding:0 14px;display:flex;align-items:center;z-index:2;white-space:nowrap;}
+.ticker-track{display:flex;gap:0;animation:tickerScroll 35s linear infinite;white-space:nowrap;padding-left:160px;}
+.ticker-track:hover{animation-play-state:paused;}
+.ticker-item{display:inline-flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#c8e6f0;letter-spacing:.5px;padding:0 30px;border-right:1px solid #0a3a5c;}
+.ticker-item .t-flag{font-size:14px;}
+.ticker-item .t-name{color:#00d4ff;font-weight:700;}
+.ticker-item .t-time{color:#1a3a4a;font-size:9px;}
+@keyframes tickerScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* SPIN TO WIN */
+#spin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);}
+#spin-overlay.open{display:flex;}
+#spin-box{background:#040c14;border:1px solid #00d4ff;max-width:460px;width:100%;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));box-shadow:0 0 80px rgba(0,212,255,0.15);text-align:center;padding:30px 24px 24px;animation:modalIn .4s ease;}
+.spin-header{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:4px;}
+.spin-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:2px;margin-bottom:20px;}
+.spin-wheel-wrap{position:relative;width:240px;height:240px;margin:0 auto 20px;}
+#spin-canvas{width:240px;height:240px;border-radius:50%;border:3px solid #00d4ff;box-shadow:0 0 30px rgba(0,212,255,0.3);}
+.spin-pointer{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:28px;filter:drop-shadow(0 0 6px #ff4466);z-index:2;}
+#spin-btn{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;letter-spacing:2px;padding:14px 40px;background:linear-gradient(135deg,#00d4ff,#00ff88);color:#000;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .2s;margin-bottom:12px;width:100%;}
+#spin-btn:hover{box-shadow:0 0 30px rgba(0,212,255,0.5);}
+#spin-btn:disabled{opacity:.5;cursor:not-allowed;}
+#spin-result{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:#00ff88;letter-spacing:1px;min-height:24px;margin-bottom:12px;}
+.spin-wa-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:#25D366;color:#000;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;border:none;cursor:pointer;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);text-decoration:none;transition:all .2s;margin-bottom:8px;}
+.spin-wa-btn:hover{background:#fff;}
+.spin-close-btn{font-family:'Share Tech Mono',monospace;font-size:11px;color:#1a3a4a;background:none;border:none;cursor:pointer;letter-spacing:1px;transition:color .2s;}
+.spin-close-btn:hover{color:#4a7a94;}
+#spin-trigger{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:4000;background:#ff4466;color:#fff;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;padding:12px 6px;cursor:pointer;border:none;writing-mode:vertical-rl;text-orientation:mixed;box-shadow:4px 0 20px rgba(255,68,102,0.3);transition:all .2s;clip-path:polygon(0 0,100% 4px,100% calc(100% - 4px),0 100%);}
+#spin-trigger:hover{background:#fff;color:#ff4466;padding-left:10px;}
+
+/* PDF CATALOG */
+#pdf-btn-wrap{position:fixed;bottom:26px;right:90px;z-index:4000;}
+#pdf-dl-btn{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;padding:10px 14px;background:#040c14;border:1px solid #0a3a5c;color:#4a7a94;cursor:pointer;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);transition:all .2s;display:flex;align-items:center;gap:6px;box-shadow:0 2px 16px rgba(0,0,0,0.4);}
+#pdf-dl-btn:hover{border-color:#00d4ff;color:#00d4ff;box-shadow:0 2px 20px rgba(0,212,255,0.15);}
+
+@media(max-width:768px){
+  #sales-ticker::before{font-size:0;padding:0 8px;width:30px;}
+  .ticker-track{padding-left:38px;}
+  #spin-trigger{font-size:0;padding:10px 5px;width:20px;}
+  #pdf-btn-wrap{bottom:12px;right:76px;}
+}
 </style>
+
+
+<!-- TERMS DISCLAIMER POPUP -->
+<div id="terms-overlay">
+  <div id="terms-box">
+    <div class="t-header">
+      <div class="t-icon">&#128274;</div>
+      <div class="t-title">ACCESS VERIFICATION</div>
+      <div class="t-sub">&#9658; SNEAGTTOOLSTEC &#8212; AUTHORIZED PERSONNEL ONLY</div>
+    </div>
+    <div class="t-body">
+      <div class="t-warning">&#9888; THIS PLATFORM IS FOR PROFESSIONAL USE ONLY</div>
+      <div class="t-item"><span>&#9658;</span><div>All tools are provided for <strong>authorized security research, forensics and penetration testing only.</strong></div></div>
+      <div class="t-item"><span>&#9658;</span><div>You confirm you are <strong>18 years or older</strong> and a security professional, researcher or authorized user.</div></div>
+      <div class="t-item"><span>&#9658;</span><div>You agree that <strong>unauthorized or illegal use</strong> of any tool is strictly prohibited and your sole responsibility.</div></div>
+      <div class="t-item"><span>&#9658;</span><div>SNEAGTTOOLSTEC operates since <strong>2019</strong> and has served <strong>800+ verified clients</strong> worldwide.</div></div>
+    </div>
+    <div class="t-footer">
+      <button id="terms-agree" onclick="acceptTerms()">&#10003; I AGREE &#8212; ENTER STORE</button>
+      <button id="terms-decline" onclick="window.location.href='https://google.com'">&#10005; I DO NOT AGREE &#8212; LEAVE</button>
+    </div>
+  </div>
+</div>
 
 <canvas id="matrix-bg"></canvas>
 <!-- SPLASH -->
@@ -743,6 +2034,7 @@ body{padding-top:32px;}
     </div>
     <button onclick="toggleCart()" style="position:relative;background:transparent;border:1px solid #0a3a5c;color:#00d4ff;font-family:'Share Tech Mono',monospace;font-size:11px;padding:6px 12px;cursor:pointer;letter-spacing:1px;transition:all .2s;" onmouseover="this.style.borderColor='#00d4ff'" onmouseout="this.style.borderColor='#0a3a5c'">&#128722; CART <span id="cart-count" style="background:#ff4466;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;">0</span></button>
     <div style="display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#00ff88;border:1px solid rgba(0,255,136,0.2);padding:4px 10px;"><span style="width:7px;height:7px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;display:inline-block;animation:pulse 2s infinite;"></span><span id="visitor-count">0</span> ONLINE</div>
+    <button class="lang-toggle" id="lang-btn" onclick="toggleLang()">&#127758; EN/FR</button>
     <div class="nav-status"><div class="status-dot"></div>ONLINE</div>
   </div>
 </nav>
@@ -752,7 +2044,7 @@ body{padding-top:32px;}
   <div class="hero-badge">&#11041; Professional Security &amp; Forensics Store &#11041;</div>
   <h1 class="hero-title">
     <span class="l1">SNEAGT</span>
-    <span class="l2">TOOLSTEC</span>
+    <span class="l2 glitch" data-text="TOOLSTEC">TOOLSTEC</span>
     <span class="l3">STORE<span class="cursor"></span></span>
   </h1>
   <p class="hero-sub">Elite-grade <span>security, forensics &amp; investigation tools</span>.<br>Trusted by professionals, analysts &amp; researchers worldwide.<br><span>Contact dev directly for licensing &amp; instant delivery.</span></p>
@@ -772,6 +2064,22 @@ body{padding-top:32px;}
   </div>
 </div>
 </section>
+
+<!-- TRUST BADGES BAR -->
+<div class="trust-bar">
+  <div class="trust-item"><span class="ti">&#9989;</span><strong>Since 2019</strong> &mdash; 5+ Years</div>
+  <div class="trust-divider">|</div>
+  <div class="trust-item"><span class="ti">&#9889;</span><strong>Under 1hr</strong> Delivery</div>
+  <div class="trust-divider">|</div>
+  <div class="trust-item"><span class="ti">&#128274;</span><strong>Secure</strong> Crypto Payment</div>
+  <div class="trust-divider">|</div>
+  <div class="trust-item"><span class="ti">&#11088;</span><strong>4.9/5</strong> Rating</div>
+  <div class="trust-divider">|</div>
+  <div class="trust-item"><span class="ti">&#127760;</span><strong>800+</strong> Clients Worldwide</div>
+  <div class="trust-divider">|</div>
+  <div class="trust-item"><span class="ti">&#128170;</span><strong>Full Setup</strong> Support</div>
+</div>
+
 <!-- STATS -->
 <div class="stats-bar">
   <div class="stat-item"><span class="stat-num" data-count="96">0</span><span class="stat-label">Tools Available</span></div>
@@ -882,12 +2190,272 @@ body{padding-top:32px;}
 </div>
 <!-- STORE -->
 
+
+<!-- AI TOOL RECOMMENDER -->
+<div id="ai-recommender">
+  <div class="ai-inner">
+    <div class="section-header" style="justify-content:center;text-align:center;flex-direction:column;gap:10px;">
+      <div class="ai-icon-wrap">&#129302;</div>
+      <h2 class="section-title">AI TOOL <span>RECOMMENDER</span></h2>
+      <p style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:2px;margin-top:4px;">&#9658; TELL US WHAT YOU NEED &#8212; WE FIND THE PERFECT TOOL</p>
+    </div>
+    <div class="ai-suggestions">
+      <button class="ai-suggestion-btn" onclick="fillAI('I want to monitor a phone')">&#128241; Monitor a phone</button>
+      <button class="ai-suggestion-btn" onclick="fillAI('I need to crack a password')">&#128274; Crack a password</button>
+      <button class="ai-suggestion-btn" onclick="fillAI('I want to do network analysis')">&#127760; Network analysis</button>
+      <button class="ai-suggestion-btn" onclick="fillAI('I need forensics tools')">&#128269; Digital forensics</button>
+      <button class="ai-suggestion-btn" onclick="fillAI('I want to test web applications')">&#128203; Web app testing</button>
+      <button class="ai-suggestion-btn" onclick="fillAI('I need OSINT investigation tools')">&#128373; OSINT investigation</button>
+    </div>
+    <div class="ai-input-wrap">
+      <input class="ai-input" id="ai-input" type="text" placeholder="e.g. I want to recover deleted WhatsApp messages..." maxlength="200">
+      <button class="ai-submit" id="ai-submit-btn" onclick="runAIRecommender()">&#129302; FIND TOOLS</button>
+    </div>
+    <div id="ai-results"></div>
+  </div>
+</div>
+
+
+<!-- TOP 10 LEADERBOARD -->
+<div id="top10-section">
+  <div style="max-width:700px;margin:0 auto;">
+    <div class="section-header" style="justify-content:center;flex-direction:column;text-align:center;gap:8px;margin-bottom:28px;">
+      <span class="section-tag">Live Rankings</span>
+      <h2 class="section-title">&#127942; TOP 10 MOST <span>ORDERED TOOLS</span></h2>
+      <p style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:2px;">&#9658; BASED ON CLIENT ORDERS &#8212; UPDATED DAILY</p>
+    </div>
+    <div class="top10-list" id="top10-list"></div>
+  </div>
+</div>
+
+
+<!-- LIVE SALES TICKER -->
+<div id="sales-ticker"><div class="ticker-track" id="ticker-track"><div class="ticker-item"><span class="t-flag">&#127475;&#127468;</span><span>Ahmed K. just ordered</span><span class="t-name">Metasploit Pro</span><span class="t-time">2 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127468;&#127469;</span><span>Kwame A. just ordered</span><span class="t-name">Hashcat GPU</span><span class="t-time">5 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127464;&#127470;</span><span>Moussa D. just ordered</span><span class="t-name">Phone Monitoring</span><span class="t-time">8 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127480;&#127475;</span><span>Fatima B. just ordered</span><span class="t-name">Wireshark Pro</span><span class="t-time">11 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127472;&#127466;</span><span>James O. just ordered</span><span class="t-name">Burp Suite Pro</span><span class="t-time">14 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127464;&#127474;</span><span>Issa T. just ordered</span><span class="t-name">Maltego</span><span class="t-time">17 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127468;&#127469;</span><span>Abena S. just ordered</span><span class="t-name">SpiderFoot</span><span class="t-time">21 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127475;&#127468;</span><span>Yusuf M. just ordered</span><span class="t-name">Volatility Framework</span><span class="t-time">24 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127480;&#127475;</span><span>Amara C. just ordered</span><span class="t-name">OSINT Bundle</span><span class="t-time">28 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127472;&#127466;</span><span>Daniel A. just ordered</span><span class="t-name">RootShell Master</span><span class="t-time">32 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127464;&#127470;</span><span>Sekou B. just ordered</span><span class="t-name">Nmap Pro</span><span class="t-time">35 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127468;&#127469;</span><span>Ama F. just ordered</span><span class="t-name">John the Ripper</span><span class="t-time">38 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127475;&#127468;</span><span>Ahmed K. just ordered</span><span class="t-name">Metasploit Pro</span><span class="t-time">2 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127468;&#127469;</span><span>Kwame A. just ordered</span><span class="t-name">Hashcat GPU</span><span class="t-time">5 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127464;&#127470;</span><span>Moussa D. just ordered</span><span class="t-name">Phone Monitoring</span><span class="t-time">8 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127480;&#127475;</span><span>Fatima B. just ordered</span><span class="t-name">Wireshark Pro</span><span class="t-time">11 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127472;&#127466;</span><span>James O. just ordered</span><span class="t-name">Burp Suite Pro</span><span class="t-time">14 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127464;&#127474;</span><span>Issa T. just ordered</span><span class="t-name">Maltego</span><span class="t-time">17 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127468;&#127469;</span><span>Abena S. just ordered</span><span class="t-name">SpiderFoot</span><span class="t-time">21 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127475;&#127468;</span><span>Yusuf M. just ordered</span><span class="t-name">Volatility Framework</span><span class="t-time">24 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127480;&#127475;</span><span>Amara C. just ordered</span><span class="t-name">OSINT Bundle</span><span class="t-time">28 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127472;&#127466;</span><span>Daniel A. just ordered</span><span class="t-name">RootShell Master</span><span class="t-time">32 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127464;&#127470;</span><span>Sekou B. just ordered</span><span class="t-name">Nmap Pro</span><span class="t-time">35 min ago</span></div><div class="ticker-item"><span class="t-flag">&#127468;&#127469;</span><span>Ama F. just ordered</span><span class="t-name">John the Ripper</span><span class="t-time">38 min ago</span></div></div></div>
 <!-- FEATURED TOOLS -->
 <div class="featured-section">
   <div style="max-width:1400px;margin:0 auto;">
     <div class="section-header"><span class="section-tag">Top Picks</span><h2 class="section-title">&#128081; FEATURED <span>TOOLS</span></h2><div class="section-line"></div></div>
     <p style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:2px;margin-bottom:24px;">&#9658; MOST POPULAR TOOLS CHOSEN BY OUR CLIENTS</p>
     <div class="featured-grid" id="featured-grid"></div>
+  </div>
+</div>
+
+
+
+<!-- FLASH SALE -->
+<div id="flash-sale">
+  <div class="flash-header">
+    <div class="flash-title-wrap">
+      <div class="flash-icon">&#9889;</div>
+      <div>
+        <div class="flash-title">&#128293; FLASH DEALS</div>
+        <div class="flash-subtitle">&#9658; LIMITED TIME OFFERS &#8212; DON&#39;T MISS OUT</div>
+      </div>
+    </div>
+    <div class="flash-timer-wrap">
+      <div class="flash-timer-label">ENDS IN:</div>
+      <div class="flash-timer">
+        <div class="flash-digit" id="fl-h">00</div>
+        <div class="flash-sep">:</div>
+        <div class="flash-digit" id="fl-m">00</div>
+        <div class="flash-sep">:</div>
+        <div class="flash-digit" id="fl-s">00</div>
+      </div>
+    </div>
+  </div>
+  <div class="flash-grid" id="flash-grid"></div>
+</div>
+
+<!-- TOOL BUNDLES -->
+<div id="bundles-section">
+  <div style="max-width:1400px;margin:0 auto;">
+    <div class="section-header"><span class="section-tag">Packages</span><h2 class="section-title">TOOL <span>BUNDLES</span></h2><div class="section-line"></div></div>
+    <p style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:2px;margin-bottom:28px;">&#9658; PRE-MADE PACKAGES FOR EVERY NEED &#8212; CONTACT DEV FOR BUNDLE PRICING</p>
+    <div class="bundles-grid">
+
+      <div class="bundle-card" style="--bundle-color:#00d4ff;">
+        <span class="bundle-badge">STARTER PACK</span>
+        <div class="bundle-popular">&#128293; MOST POPULAR</div>
+        <div class="bundle-icon">&#128640;</div>
+        <div class="bundle-name">BEGINNER KIT</div>
+        <div class="bundle-desc">Perfect for those starting out in cybersecurity. Essential tools to get you up and running fast.</div>
+        <div class="bundle-tools">
+          <div class="bundle-tool-item">Nmap Pro</div>
+          <div class="bundle-tool-item">Wireshark Pro</div>
+          <div class="bundle-tool-item">John the Ripper</div>
+          <div class="bundle-tool-item">VPNGhost 6.0</div>
+          <div class="bundle-tool-item">Ghidra Decompiler</div>
+        </div>
+        <div class="bundle-footer">
+          <span class="bundle-count">5 TOOLS INCLUDED</span>
+          <button class="bundle-btn" onclick="contactBundle('Beginner Kit')">GET BUNDLE &#8594;</button>
+        </div>
+      </div>
+
+      <div class="bundle-card" style="--bundle-color:#ff6b35;">
+        <span class="bundle-badge">RED TEAM PACK</span>
+        <div class="bundle-icon">&#128165;</div>
+        <div class="bundle-name">RED TEAM BUNDLE</div>
+        <div class="bundle-desc">Complete penetration testing arsenal for professional red team engagements and security assessments.</div>
+        <div class="bundle-tools">
+          <div class="bundle-tool-item">Metasploit Pro</div>
+          <div class="bundle-tool-item">Burp Suite Pro</div>
+          <div class="bundle-tool-item">SQLmap Elite</div>
+          <div class="bundle-tool-item">RootShell Master</div>
+          <div class="bundle-tool-item">Maltego</div>
+          <div class="bundle-tool-item">Cobalt Strike</div>
+        </div>
+        <div class="bundle-footer">
+          <span class="bundle-count">6 TOOLS INCLUDED</span>
+          <button class="bundle-btn" onclick="contactBundle('Red Team Bundle')">GET BUNDLE &#8594;</button>
+        </div>
+      </div>
+
+      <div class="bundle-card" style="--bundle-color:#00ff88;">
+        <span class="bundle-badge">FORENSICS PACK</span>
+        <div class="bundle-icon">&#128300;</div>
+        <div class="bundle-name">FORENSICS KIT</div>
+        <div class="bundle-desc">Full digital forensics and investigation suite trusted by professionals and law enforcement worldwide.</div>
+        <div class="bundle-tools">
+          <div class="bundle-tool-item">Autopsy / Sleuth Kit</div>
+          <div class="bundle-tool-item">Volatility Framework</div>
+          <div class="bundle-tool-item">FTK Imager</div>
+          <div class="bundle-tool-item">Binwalk</div>
+          <div class="bundle-tool-item">DiskReveal Pro</div>
+          <div class="bundle-tool-item">PeStudio</div>
+        </div>
+        <div class="bundle-footer">
+          <span class="bundle-count">6 TOOLS INCLUDED</span>
+          <button class="bundle-btn" onclick="contactBundle('Forensics Kit')">GET BUNDLE &#8594;</button>
+        </div>
+      </div>
+
+      <div class="bundle-card" style="--bundle-color:#c9a84c;">
+        <span class="bundle-badge">PREMIUM PACK</span>
+        <div class="bundle-icon">&#128081;</div>
+        <div class="bundle-name">ULTIMATE BUNDLE</div>
+        <div class="bundle-desc">The complete professional arsenal. Every category covered. For serious security professionals only.</div>
+        <div class="bundle-tools">
+          <div class="bundle-tool-item">All Pentest Tools</div>
+          <div class="bundle-tool-item">All Forensics Tools</div>
+          <div class="bundle-tool-item">All Monitoring Tools</div>
+          <div class="bundle-tool-item">All Recovery Tools</div>
+          <div class="bundle-tool-item">All Network Tools</div>
+          <div class="bundle-tool-item">Full Support Included</div>
+        </div>
+        <div class="bundle-footer">
+          <span class="bundle-count">96 TOOLS INCLUDED</span>
+          <button class="bundle-btn" onclick="contactBundle('Ultimate Bundle')">GET BUNDLE &#8594;</button>
+        </div>
+      </div>
+
+      <div class="bundle-card" style="--bundle-color:#2CA5E0;">
+        <span class="bundle-badge">MOBILE PACK</span>
+        <div class="bundle-icon">&#128241;</div>
+        <div class="bundle-name">MOBILE SECURITY KIT</div>
+        <div class="bundle-desc">Complete mobile device security, monitoring and forensics toolkit for iOS and Android platforms.</div>
+        <div class="bundle-tools">
+          <div class="bundle-tool-item">Phone Monitoring</div>
+          <div class="bundle-tool-item">MobSF</div>
+          <div class="bundle-tool-item">Drozer</div>
+          <div class="bundle-tool-item">MobileVault Pro</div>
+          <div class="bundle-tool-item">WhatsApp Audit</div>
+        </div>
+        <div class="bundle-footer">
+          <span class="bundle-count">5 TOOLS INCLUDED</span>
+          <button class="bundle-btn" onclick="contactBundle('Mobile Security Kit')">GET BUNDLE &#8594;</button>
+        </div>
+      </div>
+
+      <div class="bundle-card" style="--bundle-color:#ff4466;">
+        <span class="bundle-badge">OSINT PACK</span>
+        <div class="bundle-icon">&#128373;</div>
+        <div class="bundle-name">OSINT MASTER KIT</div>
+        <div class="bundle-desc">Complete open-source intelligence gathering suite for investigations, reconnaissance and profiling.</div>
+        <div class="bundle-tools">
+          <div class="bundle-tool-item">Maltego</div>
+          <div class="bundle-tool-item">SpiderFoot</div>
+          <div class="bundle-tool-item">Shodan</div>
+          <div class="bundle-tool-item">Sherlock</div>
+          <div class="bundle-tool-item">Recon-ng</div>
+          <div class="bundle-tool-item">theHarvester</div>
+        </div>
+        <div class="bundle-footer">
+          <span class="bundle-count">6 TOOLS INCLUDED</span>
+          <button class="bundle-btn" onclick="contactBundle('OSINT Master Kit')">GET BUNDLE &#8594;</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- VIP LOYALTY SYSTEM -->
+<div id="vip-section">
+  <div style="max-width:1000px;margin:0 auto;">
+    <div class="section-header" style="justify-content:center;flex-direction:column;text-align:center;gap:8px;margin-bottom:28px;">
+      <span class="section-tag">Loyalty Program</span>
+      <h2 class="section-title">&#127941; VIP <span>LOYALTY BADGES</span></h2>
+      <p style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#4a7a94;letter-spacing:2px;">&#9658; THE MORE YOU ORDER &#8212; THE MORE BENEFITS YOU UNLOCK</p>
+    </div>
+    <div class="vip-grid">
+
+      <div class="vip-card" style="--vc:#cd7f32;">
+        <div class="vip-medal">&#129353;</div>
+        <div class="vip-name">BRONZE</div>
+        <div class="vip-req">First Purchase</div>
+        <div class="vip-perks">
+          <div class="vip-perk">Access to all standard tools</div>
+          <div class="vip-perk">Basic setup support</div>
+          <div class="vip-perk">24hr delivery guarantee</div>
+        </div>
+        <button class="vip-btn" onclick="contactVIP('Bronze')">GET STARTED &#8594;</button>
+      </div>
+
+      <div class="vip-card" style="--vc:#9b9b9b;">
+        <div class="vip-medal">&#129352;</div>
+        <div class="vip-name">SILVER</div>
+        <div class="vip-req">3+ Tools Purchased</div>
+        <div class="vip-perks">
+          <div class="vip-perk">Everything in Bronze</div>
+          <div class="vip-perk">Priority delivery under 6hrs</div>
+          <div class="vip-perk">Exclusive Silver discounts</div>
+          <div class="vip-perk">Direct developer support</div>
+        </div>
+        <button class="vip-btn" onclick="contactVIP('Silver')">UNLOCK SILVER &#8594;</button>
+      </div>
+
+      <div class="vip-card" style="--vc:#c9a84c;">
+        <div class="vip-medal">&#129351;</div>
+        <div class="vip-name">GOLD</div>
+        <div class="vip-req">7+ Tools Purchased</div>
+        <div class="vip-perks">
+          <div class="vip-perk">Everything in Silver</div>
+          <div class="vip-perk">Under 1hr priority delivery</div>
+          <div class="vip-perk">Free tool upgrades</div>
+          <div class="vip-perk">Gold exclusive tools access</div>
+          <div class="vip-perk">Monthly new tool alerts</div>
+        </div>
+        <button class="vip-btn" onclick="contactVIP('Gold')">UNLOCK GOLD &#8594;</button>
+      </div>
+
+      <div class="vip-card" style="--vc:#00d4ff;">
+        <div class="vip-medal">&#128081;</div>
+        <div class="vip-name">PLATINUM</div>
+        <div class="vip-req">15+ Tools Purchased</div>
+        <div class="vip-perks">
+          <div class="vip-perk">Everything in Gold</div>
+          <div class="vip-perk">Instant delivery always</div>
+          <div class="vip-perk">Lifetime free updates</div>
+          <div class="vip-perk">Custom tool requests</div>
+          <div class="vip-perk">Platinum private group access</div>
+          <div class="vip-perk">Personal dedicated support</div>
+        </div>
+        <button class="vip-btn" onclick="contactVIP('Platinum')">UNLOCK PLATINUM &#8594;</button>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -1392,6 +2960,7 @@ function renderProducts(list){
       +'<ul class="card-features">'+p.features.map(function(f){return '<li>'+f+'</li>';}).join('')+'</ul>'
       +'<button class="learn-more-btn" id="lmbtn-'+p.id+'" onclick="event.stopPropagation();toggleLearnMore('+p.id+',this)">LEARN MORE &#9660;</button>'
       +'<div class="learn-more-panel" id="lm-'+p.id+'">'
+      +'<div class="pop-bar-wrap"><span class="pop-bar-label">POPULARITY</span><div class="pop-bar-track"><div class="pop-bar-fill" style="width:'+Math.min(99,60+p.id%35)+'%"></div></div><span class="pop-bar-label">'+Math.min(99,60+p.id%35)+'%</span></div>'
       +'<div class="lm-row"><span class="lm-label">CATEGORY</span><span class="lm-value">'+p.category.toUpperCase()+'</span></div>'
       +'<div class="lm-row"><span class="lm-label">ACTIVE</span><span class="lm-value">Since '+getActiveSince(p.id)+'</span></div>'
       +'<div class="lm-row"><span class="lm-label">TIERS</span><span class="lm-value">'+p.tiers.join(' / ')+'</span></div>'
@@ -1402,7 +2971,7 @@ function renderProducts(list){
       +(p.tiers.indexOf('Basic')>=0?'<span class="tier tier-basic">Basic</span>':'')
       +(p.tiers.indexOf('Standard')>=0?'<span class="tier tier-standard">Standard</span>':'')
       +(p.tiers.indexOf('Premium')>=0?'<span class="tier tier-premium">Premium</span>':'')
-      +'</div><button class="btn-get" onclick="event.stopPropagation();openModal('+p.id+')">GET ACCESS</button></div></div>';
+      +'</div><button class="btn-get" onclick="event.stopPropagation();openModal('+p.id+')">GET ACCESS</button><button class="btn-get" style="border-color:#4a7a94;color:#4a7a94;margin-left:5px;" onclick="event.stopPropagation();addToCompare('+p.id+')">&#9878;</button></div></div>';
   }).join('');
 }
 function filterCards(cat,btn){
@@ -1837,6 +3406,869 @@ document.addEventListener('mousemove', function(e){
   requestAnimationFrame(animTrail);
 })();
 
+
+
+
+// ============================================================
+// SUPPORT CHATBOT
+// ============================================================
+var cbOpen = false;
+var cbStarted = false;
+var cbClientName = '';
+var cbMsgCount = 0;
+var cbNotifyShown = false;
+var cbContext = '';
+var cbRated = false;
+
+// ALL 96 TOOLS KNOWLEDGE BASE
+var cbTools = {};
+(function(){
+  products.forEach(function(p){
+    cbTools[p.name.toLowerCase()] = p;
+    // Also index by short name
+    var short = p.name.toLowerCase().split(' ')[0];
+    if(!cbTools[short]) cbTools[short] = p;
+  });
+})();
+
+// SMART NOTIFY TRIGGERS
+var cbNotifyTriggers = ['buy','purchase','order','get','want','need','interested',
+  'price','cost','how much','pay','payment','bundle','package','deal',
+  'pentest','forensic','monitor','osint','crack','recover','phone','mobile',
+  'whatsapp','instagram','facebook','urgent','asap','now','today','fast',
+  'custom','special','private','exclusive','help me','looking for'];
+
+// FIND TOOL BY NAME IN MESSAGE
+function cbFindTool(text){
+  var lower = text.toLowerCase();
+  var found = null;
+  var bestLen = 0;
+  products.forEach(function(p){
+    var name = p.name.toLowerCase();
+    if(lower.indexOf(name) >= 0 && name.length > bestLen){
+      found = p; bestLen = name.length;
+    }
+    // also check first word
+    var first = name.split(' ')[0];
+    if(first.length > 3 && lower.indexOf(first) >= 0 && first.length > bestLen){
+      found = p; bestLen = first.length;
+    }
+  });
+  return found;
+}
+
+// MASTER RESPONSE ENGINE
+function cbGetResponse(text){
+  var lower = text.toLowerCase();
+  var name = cbClientName ? cbClientName : '';
+
+  // ---- GREETINGS ----
+  if(/^(hello|hi|hey|sup|yo|hola|good morning|good evening|good afternoon|howdy|what.s up|wassup|ola)/.test(lower)){
+    return {
+      reply: 'Hey ' + (name||'there') + '! &#128075; Welcome to <strong>SNEAGTTOOLSTEC</strong> &#8212; your #1 professional cybersecurity tools store!<br><br>I know everything about all <strong>96 tools</strong> in our store. Ask me anything &#128293;',
+      quick: ['What tools do you have?','How do I order?','What are the prices?','Is this store legit?']
+    };
+  }
+
+  // ---- NAME INTRODUCTION ----
+  if(lower.indexOf('my name is') >= 0 || lower.indexOf('i am ') >= 0 || lower.indexOf('call me') >= 0){
+    var nameParts = lower.replace('my name is','').replace('i am','').replace('call me','').trim().split(' ');
+    if(nameParts[0] && nameParts[0].length > 1){
+      cbClientName = nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1);
+    }
+    return {
+      reply: 'Nice to meet you <strong>' + cbClientName + '</strong>! &#128075; How can I help you today?',
+      quick: ['What tools do you have?','How do I order?','What are the prices?','Contact developer']
+    };
+  }
+
+  // ---- SPECIFIC TOOL QUESTION ----
+  var toolFound = cbFindTool(lower);
+  if(toolFound){
+    // What is / tell me about / info about tool
+    if(lower.indexOf('what is') >= 0 || lower.indexOf('tell me') >= 0 || lower.indexOf('about') >= 0 || lower.indexOf('info') >= 0 || lower.indexOf('explain') >= 0 || lower.indexOf('describe') >= 0){
+      return {
+        reply: '<strong>' + toolFound.icon + ' ' + toolFound.name + '</strong><br><br>'
+          + toolFound.desc + '<br><br>'
+          + '&#9658; <strong>Category:</strong> ' + toolFound.category.toUpperCase() + '<br>'
+          + '&#9658; <strong>Features:</strong><br>' + toolFound.features.map(function(f){return '&nbsp;&nbsp;&#10003; '+f;}).join('<br>') + '<br><br>'
+          + '&#9658; <strong>Available tiers:</strong> ' + toolFound.tiers.join(' / '),
+        quick: ['How do I get ' + toolFound.name + '?','Does ' + toolFound.name + ' work?','Price of ' + toolFound.name,'Contact developer']
+      };
+    }
+    // Does it work / is it real / quality
+    if(lower.indexOf('work') >= 0 || lower.indexOf('real') >= 0 || lower.indexOf('legit') >= 0 || lower.indexOf('quality') >= 0 || lower.indexOf('good') >= 0 || lower.indexOf('reliable') >= 0 || lower.indexOf('trust') >= 0){
+      return {
+        reply: '100% YES! &#10004;&#65039; <strong>' + toolFound.name + '</strong> is a fully working, tested and verified tool.<br><br>'
+          + 'We have sold this tool to <strong>hundreds of satisfied clients</strong> and it works exactly as described. We only sell tools that we have personally tested and verified.<br><br>'
+          + '&#9658; Quality guaranteed<br>&#9658; Full setup support included<br>&#9658; If any issue &#8212; developer fixes it immediately',
+        quick: ['How do I get ' + toolFound.name + '?','Price of ' + toolFound.name,'Contact developer']
+      };
+    }
+    // Price / cost / how much
+    if(lower.indexOf('price') >= 0 || lower.indexOf('cost') >= 0 || lower.indexOf('how much') >= 0 || lower.indexOf('fee') >= 0){
+      return {
+        reply: 'For <strong>' + toolFound.name + '</strong> pricing:<br><br>'
+          + (toolFound.tiers.indexOf('Basic') >= 0 ? '&#128309; <strong>Basic</strong> &#8212; Entry level access<br>' : '')
+          + (toolFound.tiers.indexOf('Standard') >= 0 ? '&#9889; <strong>Standard</strong> &#8212; Full features<br>' : '')
+          + (toolFound.tiers.indexOf('Premium') >= 0 ? '&#128081; <strong>Premium</strong> &#8212; Everything + priority support<br>' : '')
+          + '<br>Contact the developer directly for exact pricing &#8212; he responds fast!',
+        quick: ['Contact developer','How do I order?','What is included?']
+      };
+    }
+    // How to get / order / buy
+    if(lower.indexOf('get') >= 0 || lower.indexOf('order') >= 0 || lower.indexOf('buy') >= 0 || lower.indexOf('purchase') >= 0 || lower.indexOf('acquire') >= 0){
+      return {
+        reply: 'To get <strong>' + toolFound.name + '</strong>:<br><br>'
+          + '1&#65039;&#8419; Find it in the store and click <strong>GET ACCESS</strong><br>'
+          + '2&#65039;&#8419; Contact developer via WhatsApp or Telegram<br>'
+          + '3&#65039;&#8419; Pay securely with BTC, ETH or USDT<br>'
+          + '4&#65039;&#8419; Receive your tool <strong>within 1 hour!</strong>',
+        quick: ['Contact developer','Payment methods','Delivery time']
+      };
+    }
+    // Features / what can it do
+    if(lower.indexOf('feature') >= 0 || lower.indexOf('do') >= 0 || lower.indexOf('can it') >= 0 || lower.indexOf('capability') >= 0 || lower.indexOf('function') >= 0){
+      return {
+        reply: '<strong>' + toolFound.icon + ' ' + toolFound.name + '</strong> features:<br><br>'
+          + toolFound.features.map(function(f){return '&#10003; ' + f;}).join('<br>') + '<br><br>'
+          + '&#9658; Category: <strong>' + toolFound.category.toUpperCase() + '</strong><br>'
+          + '&#9658; Tiers: <strong>' + toolFound.tiers.join(' / ') + '</strong>',
+        quick: ['How do I get ' + toolFound.name + '?','Price of ' + toolFound.name,'Contact developer']
+      };
+    }
+    // General tool mention with upsell
+    var upsellTools = products.filter(function(p){
+      return p.category === toolFound.category && p.id !== toolFound.id;
+    }).slice(0,2);
+    var upsellText = upsellTools.length > 0
+      ? '<br><br>&#128161; <strong>Clients who got ' + toolFound.name + ' also ordered:</strong><br>'
+        + upsellTools.map(function(u){return '&#9658; ' + u.icon + ' ' + u.name;}).join('<br>')
+      : '';
+    return {
+      reply: 'Yes we have <strong>' + toolFound.icon + ' ' + toolFound.name + '</strong>! &#128293;<br><br>'
+        + toolFound.desc.substring(0, 100) + '...<br><br>'
+        + '&#9658; Tiers: ' + toolFound.tiers.join(' / ') + '<br>'
+        + '&#9658; Category: ' + toolFound.category.toUpperCase()
+        + upsellText,
+      quick: ['Tell me more about ' + toolFound.name,'Price of ' + toolFound.name,'Tell me about ' + (upsellTools[0]?upsellTools[0].name:'bundles'),'How do I order?']
+    };
+  }
+
+  // ---- DO YOU HAVE [TOOL] ----
+  if(lower.indexOf('do you have') >= 0 || lower.indexOf('you have') >= 0 || lower.indexOf('available') >= 0){
+    return {
+      reply: 'We have <strong>96+ professional tools</strong> across 8 categories! &#128293;<br><br>'
+        + '&#9658; Custom Tools<br>&#9658; Penetration Testing<br>&#9658; Network Security<br>'
+        + '&#9658; Digital Forensics<br>&#9658; Mobile Monitoring<br>&#9658; Password Recovery<br>'
+        + '&#9658; OSINT Intelligence<br>&#9658; Cloud Security<br><br>'
+        + 'Just tell me the tool name and I will give you full details!',
+      quick: ['Show pentest tools','Show forensics tools','Show monitoring tools','Search a specific tool']
+    };
+  }
+
+  // ---- QUALITY / TRUST / WILL IT WORK ----
+  if(lower.indexOf('will it work') >= 0 || lower.indexOf('does it work') >= 0 || lower.indexOf('sure it will work') >= 0 || lower.indexOf('guarantee') >= 0 || lower.indexOf('really work') >= 0){
+    return {
+      reply: 'Absolutely YES! &#10004;&#65039;&#128293;<br><br>'
+        + 'Every single tool we sell is <strong>100% tested, verified and working</strong>. We have been operating since <strong>2019</strong> with <strong>800+ satisfied clients</strong> and a <strong>4.9/5 star rating</strong>.<br><br>'
+        + '&#9658; All tools personally tested before sale<br>'
+        + '&#9658; Full setup support included<br>'
+        + '&#9658; If any issue &#8212; developer fixes it immediately<br>'
+        + '&#9658; 800+ happy clients cannot be wrong!',
+      quick: ['How do I order?','Contact developer','Show client reviews']
+    };
+  }
+
+  // ---- LEGIT / SAFE / SCAM / FAKE ----
+  if(lower.indexOf('legit') >= 0 || lower.indexOf('scam') >= 0 || lower.indexOf('fake') >= 0 || lower.indexOf('trust') >= 0 || lower.indexOf('safe') >= 0 || lower.indexOf('real') >= 0 || lower.indexOf('genuine') >= 0){
+    return {
+      reply: 'SNEAGTTOOLSTEC is <strong>100% legitimate and trusted!</strong> &#9989;<br><br>'
+        + '&#9658; Operating since <strong>2019</strong> &#8212; 5+ years<br>'
+        + '&#9658; <strong>800+ verified clients</strong> worldwide<br>'
+        + '&#9658; <strong>4.9/5 average rating</strong><br>'
+        + '&#9658; Trusted across Africa and worldwide<br>'
+        + '&#9658; Full setup support after purchase<br>'
+        + '&#9658; Real client reviews on this page<br><br>'
+        + 'We have been serving professionals since 2019. Our reputation speaks for itself!',
+      quick: ['Show client reviews','How do I order?','Contact developer']
+    };
+  }
+
+  // ---- PRICING / TIERS ----
+  if(lower.indexOf('price') >= 0 || lower.indexOf('cost') >= 0 || lower.indexOf('how much') >= 0 || lower.indexOf('fee') >= 0 || lower.indexOf('cheap') >= 0 || lower.indexOf('expensive') >= 0 || lower.indexOf('afford') >= 0){
+    return {
+      reply: 'We have 3 pricing tiers for every tool:<br><br>'
+        + '&#128309; <strong>Basic</strong> &#8212; Entry level. Core features. Perfect for beginners.<br><br>'
+        + '&#9889; <strong>Standard</strong> &#8212; Full features unlocked. Most popular choice.<br><br>'
+        + '&#128081; <strong>Premium</strong> &#8212; Everything included. Priority delivery. Full support. Best value.<br><br>'
+        + 'Contact the developer for exact pricing on any tool or bundle!',
+      quick: ['Contact developer','What are bundles?','How do I order?']
+    };
+  }
+
+  // ---- HOW TO ORDER ----
+  if(lower.indexOf('order') >= 0 || lower.indexOf('buy') >= 0 || lower.indexOf('purchase') >= 0 || lower.indexOf('how to get') >= 0 || lower.indexOf('how do i') >= 0 || lower.indexOf('process') >= 0 || lower.indexOf('steps') >= 0){
+    return {
+      reply: 'Ordering is super simple! &#128522;<br><br>'
+        + '<strong>Step 1</strong> &#8212; Browse store and find your tool<br>'
+        + '<strong>Step 2</strong> &#8212; Click <strong>GET ACCESS</strong> or add to cart<br>'
+        + '<strong>Step 3</strong> &#8212; Contact developer via WhatsApp or Telegram<br>'
+        + '<strong>Step 4</strong> &#8212; Pay securely with crypto<br>'
+        + '<strong>Step 5</strong> &#8212; Receive tool <strong>within 1 hour!</strong><br><br>'
+        + 'It is that easy &#128293; Developer responds fast!',
+      quick: ['Payment methods','Contact developer','Delivery time','What are the prices?']
+    };
+  }
+
+  // ---- PAYMENT ----
+  if(lower.indexOf('pay') >= 0 || lower.indexOf('payment') >= 0 || lower.indexOf('bitcoin') >= 0 || lower.indexOf('btc') >= 0 || lower.indexOf('eth') >= 0 || lower.indexOf('usdt') >= 0 || lower.indexOf('crypto') >= 0 || lower.indexOf('transfer') >= 0){
+    return {
+      reply: 'We accept 3 secure payment methods:<br><br>'
+        + '&#8383; <strong>Bitcoin (BTC)</strong> &#8212; Most popular<br>'
+        + '&#926; <strong>Ethereum (ETH)</strong><br>'
+        + '&#8366; <strong>USDT (TRC20)</strong> &#8212; Stable coin<br><br>'
+        + 'Payment addresses are in the <strong>PAYMENT</strong> section on the site.<br>'
+        + 'Other options available on request!',
+      quick: ['How do I order?','Delivery time','Contact developer']
+    };
+  }
+
+  // ---- DELIVERY ----
+  if(lower.indexOf('deliver') >= 0 || lower.indexOf('how long') >= 0 || lower.indexOf('wait') >= 0 || lower.indexOf('when') >= 0 || lower.indexOf('fast') >= 0 || lower.indexOf('quick') >= 0|| lower.indexOf('receive') >= 0){
+    return {
+      reply: 'Delivery is <strong>lightning fast!</strong> &#9889;<br><br>'
+        + '&#9658; Standard: <strong>1-24 hours</strong> after payment<br>'
+        + '&#9658; Premium tier: <strong>Under 1 hour</strong><br>'
+        + '&#9658; Average: <strong>Under 30 minutes</strong><br><br>'
+        + 'The developer is always available on WhatsApp and Telegram to deliver your tools fast!',
+      quick: ['Contact developer','How do I order?','Payment methods']
+    };
+  }
+
+  // ---- BUNDLES / PACKAGES ----
+  if(lower.indexOf('bundle') >= 0 || lower.indexOf('package') >= 0 || lower.indexOf('combo') >= 0 || lower.indexOf('kit') >= 0 || lower.indexOf('deal') >= 0 || lower.indexOf('multiple') >= 0){
+    return {
+      reply: 'We have 6 amazing bundles! &#127873;<br><br>'
+        + '&#128640; <strong>Beginner Kit</strong> &#8212; 5 essential tools<br>'
+        + '&#128165; <strong>Red Team Bundle</strong> &#8212; 6 pentest tools<br>'
+        + '&#128300; <strong>Forensics Kit</strong> &#8212; 6 forensics tools<br>'
+        + '&#128081; <strong>Ultimate Bundle</strong> &#8212; All 96 tools!<br>'
+        + '&#128241; <strong>Mobile Security Kit</strong> &#8212; 5 mobile tools<br>'
+        + '&#128373; <strong>OSINT Master Kit</strong> &#8212; 6 OSINT tools<br><br>'
+        + 'Scroll to the <strong>BUNDLES</strong> section to see all packages!',
+      quick: ['Bundle prices?','Contact developer','How do I order?']
+    };
+  }
+
+  // ---- SUPPORT AFTER PURCHASE ----
+  if(lower.indexOf('support') >= 0 || lower.indexOf('after') >= 0 || lower.indexOf('setup') >= 0 || lower.indexOf('install') >= 0 || lower.indexOf('help') >= 0 || lower.indexOf('guide') >= 0 || lower.indexOf('tutorial') >= 0){
+    return {
+      reply: 'Yes! Full support is included with every purchase! &#128170;<br><br>'
+        + '&#9658; <strong>Setup guidance</strong> &#8212; Developer helps you set up<br>'
+        + '&#9658; <strong>After-sale support</strong> &#8212; We are always available<br>'
+        + '&#9658; <strong>Issue resolution</strong> &#8212; Any problem fixed immediately<br>'
+        + '&#9658; <strong>WhatsApp & Telegram</strong> &#8212; Direct access to developer<br><br>'
+        + 'You are never left alone after buying. We make sure everything works perfectly!',
+      quick: ['How do I order?','Contact developer','Payment methods']
+    };
+  }
+
+  // ---- REFUND ----
+  if(lower.indexOf('refund') >= 0 || lower.indexOf('return') >= 0 || lower.indexOf('money back') >= 0 || lower.indexOf('cancel') >= 0){
+    return {
+      reply: 'Our refund policy is fair and client-focused! &#128717;<br><br>'
+        + 'Since our products are digital, refunds are handled case by case. However:<br><br>'
+        + '&#9658; If a tool does not work &#8212; <strong>we fix it immediately</strong><br>'
+        + '&#9658; If there is a genuine issue &#8212; <strong>we find a solution</strong><br>'
+        + '&#9658; Our goal is <strong>100% client satisfaction</strong><br><br>'
+        + 'With 800+ happy clients, issues are very rare. Contact the developer if you have any concerns!',
+      quick: ['Contact developer','Is this store legit?','How do I order?']
+    };
+  }
+
+  // ---- CATEGORY SPECIFIC ----
+  if(lower.indexOf('pentest') >= 0 || lower.indexOf('penetration') >= 0 || lower.indexOf('exploit') >= 0 || lower.indexOf('hack') >= 0){
+    var pts = products.filter(function(p){return p.category==='pentest';});
+    return {
+      reply: 'We have <strong>' + pts.length + ' Penetration Testing tools!</strong> &#128165;<br><br>'
+        + pts.slice(0,6).map(function(p){return '&#9658; ' + p.icon + ' <strong>' + p.name + '</strong>';}).join('<br>')
+        + (pts.length > 6 ? '<br>...and ' + (pts.length-6) + ' more!' : '') + '<br><br>'
+        + 'Use the <strong>PENTEST</strong> filter in the store to see all!',
+      quick: ['Tell me about Metasploit Pro','Tell me about Burp Suite Pro','How do I order?','Contact developer']
+    };
+  }
+
+  if(lower.indexOf('forensic') >= 0 || lower.indexOf('investigate') >= 0 || lower.indexOf('evidence') >= 0 || lower.indexOf('analyze') >= 0){
+    var fts = products.filter(function(p){return p.category==='forensics';});
+    return {
+      reply: 'We have <strong>' + fts.length + ' Digital Forensics tools!</strong> &#128269;<br><br>'
+        + fts.slice(0,6).map(function(p){return '&#9658; ' + p.icon + ' <strong>' + p.name + '</strong>';}).join('<br>')
+        + (fts.length > 6 ? '<br>...and ' + (fts.length-6) + ' more!' : '') + '<br><br>'
+        + 'Use the <strong>FORENSICS</strong> filter to see all!',
+      quick: ['Tell me about Autopsy','Tell me about Volatility Framework','How do I order?','Contact developer']
+    };
+  }
+
+  if(lower.indexOf('monitor') >= 0 || lower.indexOf('track') >= 0 || lower.indexOf('spy') >= 0 || lower.indexOf('surveillance') >= 0){
+    var mts = products.filter(function(p){return p.category==='monitoring';});
+    return {
+      reply: 'We have <strong>' + mts.length + ' Monitoring tools!</strong> &#128241;<br><br>'
+        + mts.slice(0,6).map(function(p){return '&#9658; ' + p.icon + ' <strong>' + p.name + '</strong>';}).join('<br>')
+        + (mts.length > 6 ? '<br>...and ' + (mts.length-6) + ' more!' : '') + '<br><br>'
+        + 'Use the <strong>MONITORING</strong> filter to see all!',
+      quick: ['Tell me about Phone Monitoring','Tell me about SpyVport 8.5','How do I order?','Contact developer']
+    };
+  }
+
+  if(lower.indexOf('osint') >= 0 || lower.indexOf('intelligence') >= 0 || lower.indexOf('recon') >= 0 || lower.indexOf('reconnaissance') >= 0){
+    var ots = products.filter(function(p){return p.category==='pentest' && (p.name.toLowerCase().indexOf('shodan') >= 0 || p.name.toLowerCase().indexOf('maltego') >= 0 || p.name.toLowerCase().indexOf('sherlock') >= 0 || p.name.toLowerCase().indexOf('spiderfoot') >= 0 || p.name.toLowerCase().indexOf('recon') >= 0 || p.name.toLowerCase().indexOf('harvester') >= 0 || p.name.toLowerCase().indexOf('censys') >= 0);});
+    return {
+      reply: 'We have powerful OSINT tools! &#128373;<br><br>'
+        + '&#9658; &#128200; <strong>SpiderFoot</strong> &#8212; 200+ OSINT modules<br>'
+        + '&#9658; &#128378; <strong>Maltego</strong> &#8212; Visual intelligence mapping<br>'
+        + '&#9658; &#128373; <strong>Sherlock</strong> &#8212; 300+ platform username search<br>'
+        + '&#9658; &#128269; <strong>Shodan</strong> &#8212; Internet device search engine<br>'
+        + '&#9658; &#128373; <strong>Recon-ng</strong> &#8212; Automated OSINT framework<br>'
+        + '&#9658; &#128202; <strong>Censys</strong> &#8212; Internet-wide scanning<br><br>'
+        + 'Or get our <strong>OSINT Master Kit</strong> bundle with all 6 tools!',
+      quick: ['Tell me about Maltego','Tell me about Shodan','OSINT Master Kit','Contact developer']
+    };
+  }
+
+  if(lower.indexOf('network') >= 0 || lower.indexOf('wifi') >= 0 || lower.indexOf('wireless') >= 0 || lower.indexOf('firewall') >= 0 || lower.indexOf('traffic') >= 0){
+    var nts = products.filter(function(p){return p.category==='network';});
+    return {
+      reply: 'We have <strong>' + nts.length + ' Network Security tools!</strong> &#127760;<br><br>'
+        + nts.slice(0,6).map(function(p){return '&#9658; ' + p.icon + ' <strong>' + p.name + '</strong>';}).join('<br>')
+        + (nts.length > 6 ? '<br>...and ' + (nts.length-6) + ' more!' : '') + '<br><br>'
+        + 'Use the <strong>NETWORK</strong> filter to see all!',
+      quick: ['Tell me about Wireshark Pro','Tell me about Nmap Pro','How do I order?','Contact developer']
+    };
+  }
+
+  if(lower.indexOf('recover') >= 0 || lower.indexOf('password') >= 0 || lower.indexOf('crack') >= 0 || lower.indexOf('hash') >= 0 || lower.indexOf('brute') >= 0){
+    var rts = products.filter(function(p){return p.category==='recovery';});
+    return {
+      reply: 'We have <strong>' + rts.length + ' Password Recovery tools!</strong> &#128274;<br><br>'
+        + rts.slice(0,6).map(function(p){return '&#9658; ' + p.icon + ' <strong>' + p.name + '</strong>';}).join('<br>')
+        + (rts.length > 6 ? '<br>...and ' + (rts.length-6) + ' more!' : '') + '<br><br>'
+        + 'Use the <strong>RECOVERY</strong> filter to see all!',
+      quick: ['Tell me about Hashcat GPU','Tell me about Hydra','How do I order?','Contact developer']
+    };
+  }
+
+  if(lower.indexOf('cloud') >= 0 || lower.indexOf('aws') >= 0 || lower.indexOf('azure') >= 0 || lower.indexOf('s3') >= 0 || lower.indexOf('bucket') >= 0){
+    var cts = products.filter(function(p){return p.category==='cloud';});
+    return {
+      reply: 'We have <strong>' + cts.length + ' Cloud Security tools!</strong> &#9729;<br><br>'
+        + cts.map(function(p){return '&#9658; ' + p.icon + ' <strong>' + p.name + '</strong>';}).join('<br>') + '<br><br>'
+        + 'Use the <strong>CLOUD</strong> filter to see all!',
+      quick: ['Tell me about Pacu','Tell me about ScoutSuite','How do I order?','Contact developer']
+    };
+  }
+
+  // ---- CONTACT ----
+  if(lower.indexOf('contact') >= 0 || lower.indexOf('reach') >= 0 || lower.indexOf('developer') >= 0 || lower.indexOf('dev') >= 0 || lower.indexOf('speak') >= 0 || lower.indexOf('talk') >= 0){
+    return {
+      reply: 'You can reach the developer directly right now! &#128170;<br><br>'
+        + '&#9658; <strong>WhatsApp:</strong> +225 77 69 64 80<br>'
+        + '&#9658; <strong>Telegram:</strong> @Sneagt<br><br>'
+        + 'The developer responds <strong>within minutes</strong> and speaks English and French!',
+      extra: '<br><a class="cb-link-btn wa" href="https://wa.me/22577696480" target="_blank">&#128241; WhatsApp</a><a class="cb-link-btn tg" href="https://t.me/Sneagt" target="_blank">&#9992; Telegram</a>',
+      quick: ['How do I order?','Payment methods','What tools do you have?']
+    };
+  }
+
+  // ---- REVIEWS / CLIENTS ----
+  if(lower.indexOf('review') >= 0 || lower.indexOf('client') >= 0 || lower.indexOf('feedback') >= 0 || lower.indexOf('testimonial') >= 0 || lower.indexOf('rating') >= 0 || lower.indexOf('experience') >= 0){
+    return {
+      reply: 'Our clients love us! &#11088;<br><br>'
+        + '&#9658; <strong>4.9/5</strong> average rating<br>'
+        + '&#9658; <strong>800+</strong> verified clients<br>'
+        + '&#9658; <strong>5+ years</strong> of service since 2019<br>'
+        + '&#9658; Clients from Nigeria, Ghana, Ivory Coast, Kenya, Egypt, South Africa and worldwide!<br><br>'
+        + 'Scroll to the <strong>CLIENT REVIEWS</strong> and <strong>TESTIMONIALS</strong> sections to read real reviews!',
+      quick: ['Is this store legit?','How do I order?','Contact developer']
+    };
+  }
+
+  // ---- THANKS / COMPLIMENTS ----
+  if(lower.indexOf('thank') >= 0 || lower.indexOf('appreciate') >= 0 || lower.indexOf('great') >= 0 || lower.indexOf('awesome') >= 0 || lower.indexOf('perfect') >= 0 || lower.indexOf('amazing') >= 0 || lower.indexOf('love') >= 0 || lower.indexOf('best') >= 0){
+    return {
+      reply: 'Thank you ' + (name||'') + '! &#128079;&#128293; We really appreciate that! Our goal is to give every client the best experience possible. Is there anything else I can help you with?',
+      quick: ['Browse tools','View bundles','Contact developer']
+    };
+  }
+
+  // ---- GOODBYE ----
+  if(lower.indexOf('bye') >= 0 || lower.indexOf('goodbye') >= 0 || lower.indexOf('later') >= 0 || lower.indexOf('done') >= 0 || lower.indexOf('finish') >= 0 || lower.indexOf('exit') >= 0){
+    return {
+      reply: 'Goodbye ' + (name||'') + '! &#128075;&#128293; Thank you for visiting SNEAGTTOOLSTEC! Come back anytime &#8212; we are always here for you!',
+      quick: []
+    };
+  }
+
+  // ---- HOW MANY TOOLS / CATEGORIES ----
+  if(lower.indexOf('how many') >= 0 || lower.indexOf('total') >= 0 || lower.indexOf('count') >= 0 || lower.indexOf('number of') >= 0){
+    return {
+      reply: 'Here is our full store count! &#128202;<br><br>'
+        + '&#9658; <strong>96+ tools</strong> total<br>'
+        + '&#9658; <strong>8 categories</strong><br>'
+        + '&#9658; <strong>3 pricing tiers</strong> per tool<br>'
+        + '&#9658; <strong>6 bundles</strong> available<br>'
+        + '&#9658; <strong>800+ clients</strong> served<br>'
+        + '&#9658; <strong>5+ years</strong> in operation<br><br>'
+        + 'We keep adding new tools regularly!',
+      quick: ['What tools do you have?','View bundles','How do I order?']
+    };
+  }
+
+  // ---- DEFAULT FALLBACK ---- smart fallback with notify
+  return {
+    reply: 'Great question! &#129300; I want to make sure you get the best answer.<br><br>'
+      + 'For this specific question, let me connect you directly to the developer who can answer you personally and in detail!',
+    extra: '<br><a class="cb-link-btn wa" href="https://wa.me/22577696480?text=' + encodeURIComponent('Hi Sneagt! I have a question: ' + text) + '" target="_blank">&#128241; Ask on WhatsApp</a><a class="cb-link-btn tg" href="https://t.me/Sneagt" target="_blank">&#9992; Ask on Telegram</a>',
+    quick: ['What tools do you have?','How do I order?','Is this store legit?','Payment methods']
+  };
+}
+
+// NOTIFY PROMPT
+function cbBuildNotifyPrompt(clientMsg){
+  var encoded = encodeURIComponent('Hi Sneagt! A client on your store just sent this message:\n\n"' + clientMsg + '"\n\nThey may need your help. Please reply!');
+  return '<div class="cb-notify-box">'
+    + '<div class="cb-notify-title">&#128276; NOTIFY DEVELOPER</div>'
+    + '<div class="cb-notify-msg">Want the developer to see this and reply personally?</div>'
+    + '<div class="cb-notify-btns">'
+    + '<a class="cb-notify-wa" href="https://wa.me/22577696480?text=' + encoded + '" target="_blank">&#128241; Notify WhatsApp</a>'
+    + '<a class="cb-notify-tg" href="https://t.me/Sneagt" target="_blank">&#9992; Notify Telegram</a>'
+    + '</div>'
+    + '<button class="cb-notify-skip" onclick="this.parentElement.style.display=\'none\'">No thanks</button>'
+    + '</div>';
+}
+
+function shouldShowNotify(text){
+  var lower = text.toLowerCase();
+  for(var i = 0; i < cbNotifyTriggers.length; i++){
+    if(lower.indexOf(cbNotifyTriggers[i]) >= 0) return true;
+  }
+  return false;
+}
+
+function cbGetTime(){
+  var d = new Date();
+  var h = d.getHours(), m = d.getMinutes();
+  return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
+}
+
+function cbAddMessage(text, sender, extra){
+  var msgs = document.getElementById('cb-messages');
+  var div = document.createElement('div');
+  div.className = 'cb-msg ' + sender;
+  var bubble = document.createElement('div');
+  bubble.className = 'cb-bubble';
+  bubble.innerHTML = text + (extra||'');
+  var time = document.createElement('div');
+  time.className = 'cb-msg-time';
+  time.textContent = cbGetTime();
+  div.appendChild(bubble);
+  div.appendChild(time);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function cbShowTyping(){
+  var msgs = document.getElementById('cb-messages');
+  var div = document.createElement('div');
+  div.className = 'cb-msg bot';
+  div.id = 'cb-typing';
+  var bubble = document.createElement('div');
+  bubble.className = 'cb-typing-bubble';
+  bubble.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  div.appendChild(bubble);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function cbRemoveTyping(){
+  var t = document.getElementById('cb-typing');
+  if(t) t.remove();
+}
+
+function cbSetQuickReplies(replies){
+  var el = document.getElementById('cb-quick-replies');
+  el.innerHTML = '';
+  (replies||[]).forEach(function(r){
+    var btn = document.createElement('button');
+    btn.className = 'cb-quick-btn';
+    btn.textContent = r;
+    btn.onclick = function(){ processMessage(r); };
+    el.appendChild(btn);
+  });
+}
+
+function processMessage(text){
+  if(!text.trim()) return;
+  cbAddMessage(text, 'user');
+  document.getElementById('cb-input').value = '';
+  cbShowTyping();
+  cbMsgCount++;
+
+  setTimeout(function(){
+    cbRemoveTyping();
+    var response = cbGetResponse(text);
+    var notifyExtra = '';
+    if(!cbNotifyShown && (shouldShowNotify(text) || cbMsgCount >= 4)){
+      notifyExtra = cbBuildNotifyPrompt(text);
+      cbNotifyShown = true;
+    }
+    cbAddMessage(response.reply, 'bot', (response.extra||'') + notifyExtra);
+    cbSetQuickReplies(response.quick||[]);
+  }, 800 + Math.random()*700);
+}
+
+function sendChatMessage(){
+  var input = document.getElementById('cb-input');
+  var text = input.value.trim();
+  if(!text) return;
+  processMessage(text);
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  var input = document.getElementById('cb-input');
+  if(input){
+    input.addEventListener('keypress', function(e){
+      if(e.key === 'Enter') sendChatMessage();
+    });
+  }
+});
+
+function cbRate(stars){
+  var msgs = document.getElementById('cb-messages');
+  var starsDiv = msgs.querySelector('.cb-stars');
+  if(starsDiv) starsDiv.parentElement.innerHTML = 'Thank you for rating us <strong>' + stars + '/5 stars!</strong> &#128293;<br>Your feedback means everything to us!';
+  if(stars >= 4){
+    setTimeout(function(){
+      var div = document.createElement('div');
+      div.className = 'cb-msg bot';
+      div.innerHTML = '<div class="cb-bubble">&#128293; Amazing! Share your experience with others via WhatsApp!<br><a class="cb-link-btn wa" href="https://wa.me/?text=' + encodeURIComponent('I just rated SNEAGTTOOLSTEC 5 stars! Best cybersecurity tools store. Check them out!') + '" target="_blank" style="margin-top:8px;">&#128241; Share on WhatsApp</a></div>';
+      msgs.appendChild(div);
+    }, 600);
+  }
+  if(!cbOpen) toggleChatbot();
+}
+
+function toggleChatbot(){
+  cbOpen = !cbOpen;
+  var win = document.getElementById('chatbot-window');
+  var badge = document.getElementById('chatbot-badge');
+  win.classList.toggle('open', cbOpen);
+  badge.style.display = 'none';
+  document.getElementById('chatbot-toggle').innerHTML = cbOpen ? '&#10005;' : '&#129302;';
+  // Show satisfaction rating when closing after 2+ messages
+  if(!cbOpen && cbMsgCount >= 2 && !cbRated){
+    cbRated = true;
+    setTimeout(function(){
+      var msgs = document.getElementById('cb-messages');
+      var div = document.createElement('div');
+      div.className = 'cb-msg bot';
+      div.innerHTML = '<div class="cb-bubble">Before you go &#128075; Was I helpful today?<br><div class="cb-stars" style="display:flex;gap:6px;margin-top:8px;">'
+        + [1,2,3,4,5].map(function(s){
+            return '<span onclick="cbRate('+s+')" style="font-size:22px;cursor:pointer;transition:transform .15s;" onmouseover="this.style.transform=\'scale(1.3)\'" onmouseout="this.style.transform=\'scale(1)\'">&#11088;</span>';
+          }).join('')
+        + '</div></div>';
+      msgs.appendChild(div);
+    }, 400);
+    toggleChatbot();
+  }
+  if(cbOpen && !cbStarted){
+    cbStarted = true;
+    cbShowTyping();
+    setTimeout(function(){
+      cbRemoveTyping();
+      cbAddMessage('&#128075; Welcome to <strong>SNEAGTTOOLSTEC</strong> Support!<br><br>I know everything about all <strong>96 tools</strong> in the store. Ask me about any tool by name, pricing, how to order, or anything else!<br><br>What can I help you with today?', 'bot');
+      cbSetQuickReplies(['What tools do you have?','How do I order?','What are the prices?','Is this store legit?','Show me bundles','Contact developer']);
+    }, 1000);
+  }
+}
+
+setTimeout(function(){
+  var badge = document.getElementById('chatbot-badge');
+  if(badge) badge.style.display = 'flex';
+}, 3000);
+
+
+// AI TOOL RECOMMENDER
+var aiKeywords = {
+  monitor:    [19,20,23,52],
+  phone:      [19,23,50,51,52,53],
+  whatsapp:   [21,19,8],
+  spy:        [1,19,23,52],
+  password:   [11,14,31,32,62,63,64],
+  crack:      [2,9,14,31,32,62],
+  recover:    [16,17,18,29,32,63],
+  network:    [6,10,24,36,38,54,70],
+  forensic:   [34,35,37,39,58,59,60,61],
+  osint:      [25,26,55,56,57,74,75,77],
+  web:        [27,28,29,65,66,67,68,69],
+  mobile:     [19,23,50,51,52,53],
+  hack:       [7,14,15,30,52],
+  pentest:    [7,24,27,28,30,65],
+  wireless:   [33,70,71,72,73],
+  cloud:      [83,84,85,86,87],
+  bluetooth:  [71,70],
+  email:      [16,17,18,90],
+  crypto:     [5,78,79,80,81],
+  location:   [22,76],
+  track:      [20,22,76],
+  trace:      [54,22,76],
+  decode:     [12,80,35],
+  encrypt:    [13,78,81,82],
+  reverse:    [12,35,47,93,94],
+  inject:     [29,68,69],
+  exploit:    [7,30,92,93,94,95,96],
+  log:        [43,42,1],
+  memory:     [34,59],
+  disk:       [39,58,59],
+  wifi:       [33,70,72,73],
+  vpn:        [10,6],
+  scan:       [24,27,28,36,38,65,85],
+  deleted:    [21,58,59,61],
+  recovery:   [16,17,18,39,58,61],
+  instagram:  [75,74,77],
+  facebook:   [75,74,77],
+  social:     [75,74,77],
+  investigate:[25,26,55,74,76,77],
+  sniff:      [36,63,46],
+  capture:    [36,43,46,70],
+  debug:      [47,92,93,94,95],
+  malware:    [41,42,43,44,45,47,48,49]
+};
+
+function fillAI(text){
+  document.getElementById('ai-input').value = text;
+  runAIRecommender();
+}
+
+function runAIRecommender(){
+  var query = document.getElementById('ai-input').value.trim().toLowerCase();
+  if(!query){ alert('Please describe what you need!'); return; }
+  var btn = document.getElementById('ai-submit-btn');
+  var resultsEl = document.getElementById('ai-results');
+  btn.disabled = true;
+  btn.textContent = 'ANALYZING...';
+  resultsEl.style.display = 'block';
+  resultsEl.innerHTML = '<div class="ai-typing"><div class="ai-typing-dots"><div class="ai-typing-dot"></div><div class="ai-typing-dot"></div><div class="ai-typing-dot"></div></div>AI is analyzing your request...</div>';
+
+  setTimeout(function(){
+    var words = query.split(/ +/);
+    var scores = {};
+    words.forEach(function(word){
+      Object.keys(aiKeywords).forEach(function(kw){
+        if(word.indexOf(kw) >= 0 || kw.indexOf(word) >= 0){
+          aiKeywords[kw].forEach(function(id){
+            scores[id] = (scores[id]||0) + 1;
+          });
+        }
+      });
+    });
+
+    var sorted = Object.keys(scores).sort(function(a,b){ return scores[b]-scores[a]; }).slice(0,6);
+
+    if(!sorted.length){
+      sorted = [1,24,30,34,55,19].map(String);
+    }
+
+    var matched = sorted.map(function(id){
+      return products.find(function(p){ return p.id === parseInt(id); });
+    }).filter(Boolean);
+
+    var reasons = {
+      monitor: 'Best for monitoring & surveillance',
+      password: 'Top password recovery tool',
+      forensic: 'Essential forensics tool',
+      network: 'Leading network analysis tool',
+      pentest: 'Top penetration testing tool',
+      osint: 'Best OSINT intelligence tool',
+      mobile: 'Top mobile security tool',
+      web: 'Best web application tool',
+      default: 'Highly recommended for your use case'
+    };
+
+    function getReason(p){
+      var cat = p.category;
+      if(cat==='monitoring') return 'Best for monitoring use cases';
+      if(cat==='recovery') return 'Top recovery and cracking tool';
+      if(cat==='forensics') return 'Essential digital forensics tool';
+      if(cat==='network') return 'Leading network security tool';
+      if(cat==='pentest') return 'Top penetration testing tool';
+      if(cat==='custom') return 'Highly recommended custom tool';
+      return 'Perfect match for your request';
+    }
+
+    resultsEl.innerHTML = '<div class="ai-results-title">&#9989; ' + matched.length + ' Tools Recommended For You</div>'
+      + '<div class="ai-result-grid">'
+      + matched.map(function(p){
+          return '<div class="ai-result-card" onclick="openModal('+p.id+')">'
+            + '<div class="ai-result-icon">'+p.icon+'</div>'
+            + '<div class="ai-result-name">'+p.name+'</div>'
+            + '<div class="ai-result-reason">&#9658; '+getReason(p)+'</div>'
+            + '<div class="ai-result-cat">'+p.category.toUpperCase()+'</div>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+
+    btn.disabled = false;
+    btn.innerHTML = '&#129302; FIND TOOLS';
+  }, 1800);
+}
+
+document.getElementById('ai-input').addEventListener('keypress', function(e){
+  if(e.key === 'Enter') runAIRecommender();
+});
+
+// BUNDLE CONTACT
+function contactBundle(bundleName){
+  var msg = encodeURIComponent('Hi Sneagt! I am interested in the ' + bundleName + '. Please provide pricing and details.');
+  window.open('https://wa.me/22577696480?text=' + msg, '_blank');
+}
+
+// LIVE CHAT WIDGET
+var chatOpen = false;
+setTimeout(function(){
+  document.getElementById('chat-bubble').style.display = 'block';
+  chatOpen = true;
+}, 8000);
+function toggleChatWidget(){
+  chatOpen = !chatOpen;
+  var bubble = document.getElementById('chat-bubble');
+  var badge = document.getElementById('chat-notif-badge');
+  bubble.style.display = chatOpen ? 'block' : 'none';
+  badge.style.display = chatOpen ? 'none' : 'flex';
+  document.getElementById('chat-toggle-btn').innerHTML = chatOpen ? '&#10005;' : '&#128172;';
+}
+
+// TERMS DISCLAIMER
+function acceptTerms(){
+  document.getElementById('terms-overlay').style.display = 'none';
+}
+// Check if already accepted in session
+if(sessionStorage.getItem('terms_accepted')){
+  document.getElementById('terms-overlay').style.display = 'none';
+}
+document.getElementById('terms-agree').addEventListener('click', function(){
+  sessionStorage.setItem('terms_accepted','1');
+});
+
+// TOOL COMPARISON
+var compareList = [];
+function addToCompare(id){
+  if(compareList.find(function(x){return x.id===id;})){
+    alert('This tool is already in comparison!'); return;
+  }
+  if(compareList.length >= 2){
+    alert('You can only compare 2 tools at a time. Clear first!'); return;
+  }
+  var p = products.find(function(x){return x.id===id;});
+  if(!p) return;
+  compareList.push(p);
+  updateCompareBar();
+}
+function updateCompareBar(){
+  var bar = document.getElementById('compare-bar');
+  var btn = document.getElementById('btn-compare-go');
+  bar.style.display = compareList.length > 0 ? 'flex' : 'none';
+  var s1 = document.getElementById('compare-slot-1');
+  var s2 = document.getElementById('compare-slot-2');
+  if(compareList[0]){
+    s1.className = 'compare-slot filled';
+    s1.innerHTML = compareList[0].icon + ' ' + compareList[0].name + '<span class="compare-slot-remove" onclick="removeCompare(0)">&#10005;</span>';
+  } else {
+    s1.className = 'compare-slot';
+    s1.innerHTML = '<span style="color:#4a7a94;">&#43; Add Tool 1</span>';
+  }
+  if(compareList[1]){
+    s2.className = 'compare-slot filled';
+    s2.innerHTML = compareList[1].icon + ' ' + compareList[1].name + '<span class="compare-slot-remove" onclick="removeCompare(1)">&#10005;</span>';
+  } else {
+    s2.className = 'compare-slot';
+    s2.innerHTML = '<span style="color:#4a7a94;">&#43; Add Tool 2</span>';
+  }
+  btn.disabled = compareList.length < 2;
+  btn.style.opacity = compareList.length < 2 ? '.4' : '1';
+}
+function removeCompare(idx){
+  compareList.splice(idx,1);
+  updateCompareBar();
+}
+function clearCompare(){
+  compareList = [];
+  updateCompareBar();
+}
+function openCompareModal(){
+  if(compareList.length < 2) return;
+  var a = compareList[0], b = compareList[1];
+  var rows = [
+    ['ICON', a.icon, b.icon],
+    ['NAME', a.name, b.name],
+    ['CATEGORY', a.category.toUpperCase(), b.category.toUpperCase()],
+    ['DESCRIPTION', a.desc, b.desc],
+    ['FEATURES', a.features.join('<br>'), b.features.join('<br>')],
+    ['TIERS', a.tiers.join(' / '), b.tiers.join(' / ')],
+    ['STATUS', a.tag||'STABLE', b.tag||'STABLE'],
+    ['ACTIVE SINCE', getActiveSince(a.id), getActiveSince(b.id)],
+    ['POPULARITY', Math.min(99,60+a.id%35)+'%', Math.min(99,60+b.id%35)+'%']
+  ];
+  var tableHtml = '<table class="compare-table"><thead><tr>'
+    + '<th class="row-label">FIELD</th>'
+    + '<th>' + a.icon + ' ' + a.name + '</th>'
+    + '<th>' + b.icon + ' ' + b.name + '</th>'
+    + '</tr></thead><tbody>'
+    + rows.map(function(r){
+        return '<tr><td class="row-label">' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td></tr>';
+      }).join('')
+    + '</tbody></table>';
+  document.getElementById('compare-modal-body').innerHTML = tableHtml;
+  document.getElementById('compare-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+// FRENCH LANGUAGE TOGGLE
+var isFrench = false;
+var translations = {
+  'Browse Store': 'Parcourir',
+  'Contact Dev': 'Contacter',
+  'GET ACCESS': 'OBTENIR',
+  'LEARN MORE': 'EN SAVOIR PLUS',
+  'COLLAPSE': 'REDUIRE',
+  'ALL TOOLS': 'TOUS',
+  'ONLINE': 'EN LIGNE',
+  'LOADING...': 'CHARGEMENT...',
+  'Tools Available': 'Outils Disponibles',
+  'Clients Served': 'Clients Servis',
+  'Years Active': 'Ans Actifs'
+};
+function toggleLang(){
+  isFrench = !isFrench;
+  document.body.classList.toggle('fr-mode', isFrench);
+  var btn = document.getElementById('lang-btn');
+  btn.innerHTML = isFrench ? '&#127758; FR/EN' : '&#127758; EN/FR';
+  btn.classList.toggle('active', isFrench);
+  // Update key visible text
+  var statLabels = document.querySelectorAll('.stat-label');
+  if(isFrench){
+    if(statLabels[0]) statLabels[0].textContent = 'Outils Disponibles';
+    if(statLabels[1]) statLabels[1].textContent = 'Clients Servis';
+    if(statLabels[2]) statLabels[2].textContent = '% Satisfaction';
+    if(statLabels[3]) statLabels[3].textContent = 'Ans Actifs';
+  } else {
+    if(statLabels[0]) statLabels[0].textContent = 'Tools Available';
+    if(statLabels[1]) statLabels[1].textContent = 'Clients Served';
+    if(statLabels[2]) statLabels[2].textContent = '% Satisfaction';
+    if(statLabels[3]) statLabels[3].textContent = 'Years Active';
+  }
+}
+
 // BACK TO TOP
 window.addEventListener('scroll', function(){
   var btn = document.getElementById('back-to-top');
@@ -1900,6 +4332,178 @@ setTimeout(animateCounters,3200);
     </div>
   </div>
 </div>
+
+
+<!-- COMPARE BAR -->
+<div id="compare-bar">
+  <div class="compare-bar-title">&#9878; COMPARE TOOLS</div>
+  <div class="compare-slots">
+    <div class="compare-slot" id="compare-slot-1"><span style="color:#4a7a94;">&#43; Add Tool 1</span></div>
+    <div class="compare-slot" id="compare-slot-2"><span style="color:#4a7a94;">&#43; Add Tool 2</span></div>
+  </div>
+  <div class="compare-actions">
+    <button class="btn-compare-go" onclick="openCompareModal()" id="btn-compare-go" disabled style="opacity:.4;">COMPARE &#8594;</button>
+    <button class="btn-compare-clear" onclick="clearCompare()">CLEAR</button>
+  </div>
+</div>
+
+<!-- COMPARE MODAL -->
+<div class="modal-overlay" id="compare-modal">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <div><div class="modal-title">TOOL COMPARISON</div><div class="modal-subtitle">&#9658; SIDE BY SIDE ANALYSIS</div></div>
+      <button class="modal-close" onclick="document.getElementById('compare-modal').classList.remove('open')">&#10005;</button>
+    </div>
+    <div class="modal-body" id="compare-modal-body"></div>
+  </div>
+</div>
+
+
+<!-- LIVE CHAT WIDGET -->
+<div id="live-chat-widget">
+  <div id="chat-bubble">
+    <div class="chat-bubble-header">
+      <div class="chat-bubble-dot"></div>
+      <div>
+        <div class="chat-bubble-name">SNEAGT DEV</div>
+        <div class="chat-bubble-status">&#9679; Online now &#8212; Fast reply</div>
+      </div>
+    </div>
+    <div class="chat-bubble-msg">Hey! &#128075; Need help choosing the right tool? Message me directly &#8212; I respond in minutes!</div>
+    <div class="chat-bubble-actions">
+      <a class="chat-wa-btn" href="https://wa.me/22577696480?text=Hi%20Sneagt%2C%20I%20need%20help%20choosing%20a%20tool" target="_blank">&#128241; WhatsApp</a>
+      <a class="chat-tg-btn" href="https://t.me/Sneagt" target="_blank">&#9992; Telegram</a>
+    </div>
+  </div>
+  <div style="position:relative;display:flex;justify-content:flex-end;">
+    <div id="chat-notif-badge">1</div>
+    <button id="chat-toggle-btn" onclick="toggleChatWidget()">&#128172;</button>
+  </div>
+</div>
+
+
+<!-- SUPPORT CHATBOT -->
+<div id="chatbot-wrap">
+  <div id="chatbot-window">
+    <div class="cb-header">
+      <div class="cb-avatar">&#129302;</div>
+      <div class="cb-info">
+        <div class="cb-name">SNEAGT SUPPORT</div>
+        <div class="cb-status"><div class="cb-status-dot"></div>Online &#8212; Instant replies</div>
+      </div>
+      <button class="cb-close" onclick="toggleChatbot()">&#10005;</button>
+    </div>
+    <div class="cb-messages" id="cb-messages"></div>
+    <div class="cb-quick-replies" id="cb-quick-replies"></div>
+    <div class="cb-input-wrap">
+      <input class="cb-input" id="cb-input" type="text" placeholder="Type your question..." maxlength="200">
+      <button class="cb-send" onclick="sendChatMessage()">&#10148;</button>
+    </div>
+  </div>
+  <div style="position:relative;display:inline-block;">
+    <div id="chatbot-badge">1</div>
+    <button id="chatbot-toggle" onclick="toggleChatbot()">&#129302;</button>
+  </div>
+</div>
+
+
+<!-- SPIN TO WIN -->
+<button id="spin-trigger" onclick="openSpin()">&#127922; SPIN &amp; WIN</button>
+
+<div id="spin-overlay">
+  <div id="spin-box">
+    <div style="font-size:36px;margin-bottom:10px;">&#127922;</div>
+    <div class="spin-header">SPIN &amp; WIN</div>
+    <div class="spin-sub">&#9658; SPIN THE WHEEL FOR AN EXCLUSIVE DEAL</div>
+    <div class="spin-wheel-wrap">
+      <div class="spin-pointer">&#9660;</div>
+      <canvas id="spin-canvas" width="240" height="240"></canvas>
+    </div>
+    <div id="spin-result"></div>
+    <button id="spin-btn" onclick="doSpin()">&#127922; SPIN NOW</button>
+    <a id="spin-claim-btn" class="spin-wa-btn" href="#" target="_blank" style="display:none;">&#128241; CLAIM MY DEAL ON WHATSAPP</a>
+    <button class="spin-close-btn" onclick="closeSpin()">&#10005; Close</button>
+  </div>
+</div>
+
+
+<!-- PDF CATALOG BUTTON -->
+<div id="pdf-btn-wrap">
+  <button id="pdf-dl-btn" onclick="downloadCatalog()">&#128196; CATALOG PDF</button>
+</div>
+
+
+<!-- PWA INSTALL PROMPT -->
+<div id="pwa-prompt">
+  <div class="pwa-prompt-icon">&#128241;</div>
+  <div class="pwa-prompt-text">
+    <div class="pwa-prompt-title">INSTALL AS APP</div>
+    <div class="pwa-prompt-sub">Add SNEAGTTOOLSTEC to your homescreen for instant access anytime!</div>
+  </div>
+  <div class="pwa-prompt-btns">
+    <button class="pwa-install-btn" id="pwa-install-btn">&#10133; INSTALL</button>
+    <button class="pwa-dismiss-btn" onclick="dismissPWA()">Not now</button>
+  </div>
+</div>
+
+
+<!-- PWA INSTALL SCRIPT — separate from main JS, zero conflict -->
+<script>
+(function(){
+  var deferredPrompt = null;
+  var pwaPrompt = null;
+
+  // Catch the browser's install event
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show our custom prompt after 15 seconds
+    setTimeout(function(){
+      if(!sessionStorage.getItem('pwa_dismissed')){
+        pwaPrompt = document.getElementById('pwa-prompt');
+        if(pwaPrompt) pwaPrompt.classList.add('show');
+      }
+    }, 15000);
+  });
+
+  // Install button clicked
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('pwa-install-btn');
+    if(btn){
+      btn.addEventListener('click', function(){
+        if(deferredPrompt){
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(function(result){
+            if(result.outcome === 'accepted'){
+              var p = document.getElementById('pwa-prompt');
+              if(p) p.classList.remove('show');
+            }
+            deferredPrompt = null;
+          });
+        } else {
+          // Fallback for iOS — show manual instructions
+          alert('To install:\n\niPhone: Tap Share \u2192 Add to Home Screen\n\nAndroid: Tap Menu \u2192 Add to Home Screen');
+          dismissPWA();
+        }
+      });
+    }
+  });
+
+  // App was installed
+  window.addEventListener('appinstalled', function(){
+    var p = document.getElementById('pwa-prompt');
+    if(p) p.classList.remove('show');
+    deferredPrompt = null;
+    sessionStorage.setItem('pwa_dismissed','1');
+  });
+})();
+
+function dismissPWA(){
+  var p = document.getElementById('pwa-prompt');
+  if(p) p.classList.remove('show');
+  sessionStorage.setItem('pwa_dismissed','1');
+}
+</script>
 
 </body>
 </html>
